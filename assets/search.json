@@ -1,4 +1,22 @@
 [{
+            "title"    : "harm reduction for miners",
+            "subtitle" : "examination of miners as an at-risk population (internal and external factors), ideas for applying harm reduction to reduce potential losses and navigating the opaque waters of Maximal Extracted Value",
+            "tags"     : "ethereum, blockchain, distributed computing, mev, flashbots",
+            "url"      : "/primitives/2021/11/15/Harm_Reduction_for_miners.html",
+            "date"     : "2021-11-15 00:00:00 +0000"
+        },{
+            "title"    : "Ethereum Forking Notes",
+            "subtitle" : "Notes on how different clients handle hardforks and softforks",
+            "tags"     : "ethereum, blockchain, distributed computing",
+            "url"      : "/primitives/2021/11/14/Ethereum-Forking-Notes.html",
+            "date"     : "2021-11-14 00:00:00 +0000"
+        },{
+            "title"    : "DAOsclerosis",
+            "subtitle" : "on the persistence of faulty models in governance",
+            "tags"     : "ethereum, blockchain, distributed computing, dao, governance",
+            "url"      : "/primitives/2021/11/13/DAOSclarosis.html",
+            "date"     : "2021-11-13 00:00:00 +0000"
+        },{
             "title"    : "Hello, world!",
             "subtitle" : "Test example",
             "tags"     : "Jekyll, Markdown",

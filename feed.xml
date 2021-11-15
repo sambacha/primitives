@@ -1,4 +1,776 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="/primitives/feed.xml" rel="self" type="application/atom+xml" /><link href="/primitives/" rel="alternate" type="text/html" /><updated>2021-11-15T11:29:17+00:00</updated><id>/primitives/feed.xml</id><title type="html">Primitives</title><subtitle>Engineering Blog</subtitle><entry><title type="html">Hello, world!</title><link href="/primitives/2020/07/25/hello,-world!.html" rel="alternate" type="text/html" title="Hello, world!" /><published>2020-07-25T00:00:00+00:00</published><updated>2020-07-25T00:00:00+00:00</updated><id>/primitives/2020/07/25/hello,-world!</id><content type="html" xml:base="/primitives/2020/07/25/hello,-world!.html">&lt;p&gt;The post in website based on Jekyll is typically written with Markdown, which is just a lightweight markup language with plain text formatting syntax. This makes it very easy to create and publish posts.&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="/primitives/feed.xml" rel="self" type="application/atom+xml" /><link href="/primitives/" rel="alternate" type="text/html" /><updated>2021-11-15T11:41:38+00:00</updated><id>/primitives/feed.xml</id><title type="html">Primitives</title><subtitle>Engineering Blog</subtitle><entry><title type="html">harm reduction for miners</title><link href="/primitives/2021/11/15/Harm_Reduction_for_miners.html" rel="alternate" type="text/html" title="harm reduction for miners" /><published>2021-11-15T00:00:00+00:00</published><updated>2021-11-15T00:00:00+00:00</updated><id>/primitives/2021/11/15/Harm_Reduction_for_miners</id><content type="html" xml:base="/primitives/2021/11/15/Harm_Reduction_for_miners.html">&lt;script async=&quot;&quot; src=&quot;https://platform.twitter.com/widgets.js&quot; charset=&quot;utf-8&quot;&gt;&lt;/script&gt;
+
+&lt;h1 id=&quot;harm-reduction-for-miners&quot;&gt;Harm Reduction for Miners&lt;/h1&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Harm reduction methodology: An examination of miners as an at-risk population (internal and external factors), ideas for applying harm reduction to reduce potential losses and navigating the opaque waters of Maximal Extracted Value&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h3 id=&quot;notice&quot;&gt;Notice&lt;/h3&gt;
+
+&lt;p&gt;This is written in response to &lt;a href=&quot;https://hackmd.io/fvLQzbwVR-qZizmJvSnjOQ#A-Snake-in-the-Garden&quot;&gt;‘A Snake in the Garden’&lt;/a&gt;. This is not meant to be construed as a ‘take down piece’/’hit piece’, nor should you come away with the impression that one startup/solutions provider is more favoured. This is just adding more context and sources to this topic&lt;/p&gt;
+
+&lt;h4 id=&quot;disclaimers-and-potential-conflicts-of-interest&quot;&gt;Disclaimers and Potential Conflicts of Interest&lt;/h4&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;The Author has no holdings in ArcherDAO/Eden Network. 
+The author has a position in LIDO, which has recently seen an investment by Paradigm.
+The Author holds YFI, (W)ETH, DAI, USDC, FOLD, CRV, and (x)SUSHI. This does not include airdropped tokens.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;what-archerdao-was-and-was-not&quot;&gt;What ArcherDAO was and was not&lt;/h2&gt;
+
+&lt;h3 id=&quot;archerdao&quot;&gt;ArcherDAO&lt;/h3&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Since the London fork went live, Archer DAO has pivoted from a DEX offering MEV protection to becoming the Eden Network, a MEV marketplace with a token utilized to secure “slots” at the top of the block &amp;amp; priority transaction features for “stakers”.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;ArcherDAOoriginally was not a DEX offering, at all.&lt;/p&gt;
+
+&lt;p&gt;From their original documentation (sic):&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Each supplier that signs up for the Archer network is assigned 3 things:&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;An API key used to submit opportunities to the network (unique to each supplier)
+A Bot ID that is used to identify the bot sending each opportunity + distribute rewards to suppliers (each supplier can have multiple)
+A Dispatcher contract that executes transactions sent via API request and, optionally, serves as a liquidity pool the supplier can use to support their strategies
+Suppliers send POST requests to the Archer REST API with the payloads necessary to execute their transactions. See documentation for these requests here.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Archer finds the most profitable transactions each block and submits them to the network on behalf of the suppliers. If a miner within the Archer network mines this transaction before the opportunity expires and places it in priority position (first tx in block), then the resulting profit will be split between the miner, the supplier, and the network (with splits and other incentives to be determined by Archer DAO).&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://d.pr/i/kjN8wr.jpeg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://docs.google.com/document/d/178mTvHjqIM0sFx_AM3NpnqCG68WNKvtrgKc3iSMAE2g/edit&quot;&gt;Additional sources to the ArcherDAO API documentation&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;archerswap&quot;&gt;ArcherSwap&lt;/h3&gt;
+
+&lt;p&gt;From their readme (sic):&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Archerswap is a proof-of concept DEX extension that allows users to execute Uniswap and Sushiswap trades without having to worry about:&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Slippage
+Frontrunning/Sandwich Attacks
+Failed Transaction Cost
+Transaction Cancellation Cost&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://web.archive.org/web/20210928011146/https://github.com/archerdao/archerswap&quot;&gt;source via github.com/archerdao/archerswap&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;cry-havoc-and-let-slip-the-mining-pool-operators&quot;&gt;Cry Havoc and let slip the Mining Pool Operators&lt;/h3&gt;
+
+&lt;p&gt;Several individual miners have raised similar concerns, see this popular post on r/EthMining (Important) Gang of Thieves – How Mining Pools Are Stealing 100s of Millions from ETH Miners&lt;/p&gt;
+
+&lt;p&gt;If you care to click through this reddit users post history, he is quite obsessed with how certain pools redistribute MEV profits, as he should be.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;How can Eden Network coerce mining pools to distribute profits anymore than Flashbots can do the same to mining pool affiliates?&lt;/strong&gt; The answer is they can not directly pay miners themselves, in fact the arrangement has always been to pay the mining pool &lt;em&gt;operator&lt;/em&gt;. A quarterly transparency report can help ameliorate this issue, along with conducting monthly community discussions with network participants.&lt;/p&gt;
+
+&lt;p&gt;In reality this is a simple direct to miner relay feature, for example MEV Alpha Leak’s RPC endpoint. 
+This is a considerable oversimplification of how I presume Eden’s internal virtualized mempool operates. 
+MEV Alpha Leak’s RPC endpoint is a proxy service, with some ML adapters bolted on in a completely opaque way. One could also claim that flashbots is merely ‘a miner relay service’ with the added benefit of load balancer and basic DDoS protections.&lt;/p&gt;
+
+&lt;h3 id=&quot;help-me-help-you&quot;&gt;Help me, help you.&lt;/h3&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;source https://hackmd.io/fvLQzbwVR-qZizmJvSnjOQ#Protect&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;The only novel thing Eden allows is for protocols to sponsor users. While this is innovative, it requires no token and is yet another example of Eden attempting to wall off features that should be permission-less.&lt;/p&gt;
+
+&lt;p&gt;Flashbots is not permission-less. This is a strawman argument.&lt;/p&gt;
+
+&lt;p&gt;In fact Flashbots has already pre-envisioned a world in which your reputation is tokenized,&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;The biggest issue the relay is facing right now are intermittent dos attempts which take up all the relay capacity - regular usage has not been an issue. This means paying searchers won’t crowd out non-paying users.&lt;/p&gt;
+
+  &lt;p&gt;I think the solution will end up being to provide multiple paths to inclusion for searchers. Just like a good mmorpg, players may want to xp farm their way to high reputation, or they may want to take the easy path and pay to win ;)&lt;/p&gt;
+
+  &lt;p&gt;Here is what that could look like:&lt;/p&gt;
+
+  &lt;ul&gt;
+    &lt;li&gt;users default to being in the low reputation queue and risk getting crowded out&lt;/li&gt;
+    &lt;li&gt;low reputation searcher can play the reputation game and eventually move to high reputation queue if they have good performance over time&lt;/li&gt;
+    &lt;li&gt;low reputation searcher can do a donation or burn to boost their reputation, but risk dropping back down to low reputation if don’t perform well&lt;/li&gt;
+    &lt;li&gt;any searcher can pay for guaranteed capacity in the high reputation queue&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;https://github.com/flashbots/pm/discussions/79#discussioncomment-938640&lt;/p&gt;
+
+&lt;blockquote class=&quot;twitter-tweet&quot;&gt;&lt;p&gt;Contrary to Multicoin&amp;#39;s claims, minimizing MEV is core to Flashbots&amp;#39; mission &amp;amp; products.&lt;br /&gt;That shows from our funding of fairness and ethics research, work on MEV aware dApps, &amp;amp; 100s of users that have used Flashbots to skip the mempool &amp;amp; protect themselves from frontrunning.&lt;/p&gt;&amp;mdash; Robert Miller (@bertcmiller) &lt;a href=&quot;https://twitter.com/bertcmiller/status/1435686480270217226?ref_src=twsrc%5Etfw&quot;&gt;September 8, 2021&lt;/a&gt;&lt;/blockquote&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Except when it comes to protecting participating Miners in Flashbots, for example a few miners have been given the privlage of having their Identity redacted.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Here is the complete, un-redacted Flashbots list of miners (A-Z):&lt;/p&gt;
+
+&lt;p&gt;2miners
+4hash
+666pool
+antpool
+babelpool
+beepool
+binancepool
+btc-com
+crazypool
+ethermine
+ezilpool
+f2pool
+firepool
+flexpool
+hiveon
+huobipool
+k1-pool
+luxor
+minerall
+miningdao
+miningexpress
+miningpoolhub
+nanopool
+pandapool
+poolin
+solopool
+sparkpool
+spiderpool
+uupool
+viabtc
+xnpool&lt;/p&gt;
+
+&lt;blockquote class=&quot;twitter-tweet&quot;&gt;&lt;p&gt;Of course, it’s not in Eden’s interests to provide more transparency. &lt;br /&gt;Eden&amp;#39;s success relies on their token pumping. That&amp;#39;s the only way miners might stomach the 40% tax (only 60% of inflation goes to miners) that Eden and their investors want to levy on MEV.&lt;/p&gt;&amp;mdash; Robert Miller (@bertcmiller) &lt;a href=&quot;https://twitter.com/bertcmiller/status/1435686490823135235?ref_src=twsrc%5Etfw&quot;&gt;September 8, 2021&lt;/a&gt;&lt;/blockquote&gt;
+
+&lt;!-- 
+Another claim of transparency, yet took more than 6 months to disclose publicly funding by Paradigm, their 'current capital partners'.
+[source: https://github.com/flashbots/pm/commit/1f1c08b7a73860a3f2da7ffdab5d2cbb9fedbe40](https://github.com/flashbots/pm/commit/1f1c08b7a73860a3f2da7ffdab5d2cbb9fedbe40)
+
+This is not to disparage Paradigm or the people who work within its confines. They employ (and attract) some of the greatest talent in this Industry, to me this seems more of an ad hominem attack that leaves more questions than answers. How is it not in Edens interest to provide transparency? Would it not further legitimize their choice of pivot and focus vis a vie ArcherDAO? The Inflation dig towards the end of Mr. Miller's comment would be well to be reminded that until very recently, Ethereum's monetary policy was also a purely inflationary scheme. However without knowing more about Eden's particular agreements with its investors, a through and accurate analysis will have to wait until then.
+
+--&gt;
+
+&lt;h4 id=&quot;double-dip&quot;&gt;Double Dip&lt;/h4&gt;
+
+&lt;p&gt;Also, Flashbots members evidently host their own private relay endpoints, who knew? &lt;a href=&quot;https://securitytrails.com/domain/relay.epheph.com/history/a&quot;&gt;https://securitytrails.com/domain/relay.epheph.com/history/a&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;mev-data-ish&quot;&gt;MEV Data-ish&lt;/h2&gt;
+
+&lt;!-- Data issues --&gt;
+
+&lt;p&gt;“Most deadly errors arise from obsolete assumptions.”&lt;/p&gt;
+
+&lt;p&gt;-Frank Herbert&lt;/p&gt;
+
+&lt;h2 id=&quot;remarks&quot;&gt;Remarks&lt;/h2&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;Let us not loose sight on the true enemey&lt;/strong&gt;&lt;/p&gt;
+
+  &lt;p&gt;&lt;img src=&quot;https://d.pr/i/jGTgQV.jpeg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;sources-and-links&quot;&gt;Sources and Links&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;a href=&quot;https://hackmd.io/fvLQzbwVR-qZizmJvSnjOQ&quot;&gt;A Snake in the Garden&lt;/a&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;a href=&quot;https://github.com/flashbots/pm/commit/1f1c08b7a73860a3f2da7ffdab5d2cbb9fedbe40&quot;&gt;Flashbots Project Management&lt;/a&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;https://twitter.com/bertcmiller/status/1435686480270217226&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;a href=&quot;https://docs.google.com/document/d/178mTvHjqIM0sFx_AM3NpnqCG68WNKvtrgKc3iSMAE2g/edit&quot;&gt;Additional sources to the ArcherDAO API documentation&lt;/a&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;archival-links&quot;&gt;Archival Links&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;https://web.archive.org/web/20210922071908/https://github.com/flashbots/pm/discussions/79&lt;/li&gt;
+  &lt;li&gt;https://web.archive.org/web/20210922071946/https://twitter.com/bertcmiller/status/1435686480270217226&lt;/li&gt;
+  &lt;li&gt;https://web.archive.org/web/20210928011146/https://github.com/archerdao/archerswap&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;license-and-copyleft&quot;&gt;License and Copyleft&lt;/h4&gt;
+
+&lt;p&gt;We make no claim on any copyrighted material, all rights reserved of their respective owners.&lt;/p&gt;
+
+&lt;p&gt;CC-4.0-SA&lt;/p&gt;</content><author><name></name></author><category term="ethereum" /><category term="blockchain" /><category term="distributed computing" /><category term="mev" /><category term="flashbots" /><summary type="html"></summary></entry><entry><title type="html">Ethereum Forking Notes</title><link href="/primitives/2021/11/14/Ethereum-Forking-Notes.html" rel="alternate" type="text/html" title="Ethereum Forking Notes" /><published>2021-11-14T00:00:00+00:00</published><updated>2021-11-14T00:00:00+00:00</updated><id>/primitives/2021/11/14/Ethereum-Forking-Notes</id><content type="html" xml:base="/primitives/2021/11/14/Ethereum-Forking-Notes.html">&lt;h1 id=&quot;ethereum-forking-notes&quot;&gt;Ethereum Forking Notes&lt;/h1&gt;
+
+&lt;p&gt;Probability of a Fork Occuring
+\(P\left(f o r k \mid t_{B}=600\right)=1-e^{\frac{-t_{90} t h}{600}}\)&lt;/p&gt;
+
+&lt;p&gt;Based  on  the  above,  the  probability  for  a  fork  to  occur  is
+\(P(f ork) = 1.915%\)&lt;/p&gt;
+
+&lt;p&gt;for  a  propagation  time  of \(t90th = 11.6seconds\)&lt;/p&gt;
+
+&lt;p&gt;We  note  that  while  the  network  size  (N)  effect  over  theblock 
+propagation time (t50th) is logarithmic,the block size’s(B) effect is linear.&lt;/p&gt;
+
+&lt;h3 id=&quot;go-ethereum&quot;&gt;Go Ethereum&lt;/h3&gt;
+
+&lt;p&gt;&lt;a href=&quot;/n-L9O9AYRbGo0Z9oqpQKJA&quot;&gt;https://github.com/ethereum/go-ethereum/commit/82538dc0c04f03bbc4e3eab953ad2c1bd67ef847.patch&lt;/a&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-lang=go&quot;&gt;// We're about to replace a transaction. The reorg does a more thorough
+// analysis of what to remove and how, but it runs async. We don't want to
+// do too many replacements between reorg-runs, so we cap the number of
+// replacements to 25% of the slots
+if pool.changesSinceReorg &amp;gt; int(pool.config.GlobalSlots/4) {
+    throttleTxMeter.Mark(1)
+    return false, ErrTxPoolOverflow
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-lang=go&quot;&gt;// throttleTxMeter counts how many transactions are rejected due to too-many-changes between
+// txpool reorgs.
+throttleTxMeter = metrics.NewRegisteredMeter(&quot;txpool/throttle&quot;, nil)
+// reorgDurationTimer measures how long time a txpool reorg takes.
+reorgDurationTimer = metrics.NewRegisteredTimer(&quot;txpool/reorgtime&quot;, nil)
+// dropBetweenReorgHistogram counts how many drops we experience between two reorg runs. It is expected
+// that this number is pretty low, since txpool reorgs happen very frequently.
+dropBetweenReorgHistogram = metrics.NewRegisteredHistogram(&quot;txpool/dropbetweenreorg&quot;, nil, metrics.NewExpDecaySample(1028, 0.015))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;source&lt;a href=&quot;https://github.com/ethereum/go-ethereum/commit/82538dc0c04f03bbc4e3eab953ad2c1bd67ef847.diff&quot;&gt;https://github.com/ethereum/go-ethereum/commit/82538dc0c04f03bbc4e3eab953ad2c1bd67ef847.diff&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;https://github.com/ethers-io/ethers.js/blob/7175e2e99c2747e8d2314feb407bf0a0f9371ece/packages/abstract-provider/src.ts/index.ts#L146&lt;/p&gt;
+
+&lt;h3 id=&quot;the-graph&quot;&gt;The Graph&lt;/h3&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://github.com/graphprotocol/graph-node/pull/1801&quot;&gt;https://github.com/graphprotocol/graph-node/pull/1801&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;eth2&quot;&gt;Eth2&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://github.com/fjl/p2p-drafts/blob/c20e4c3cb5778cce26744e5275ca2b3f9a47b690/merge-sync/merge-sync.md#reorg-processing-and-state-availability&quot;&gt;https://github.com/fjl/p2p-drafts/blob/c20e4c3cb5778cce26744e5275ca2b3f9a47b690/merge-sync/merge-sync.md#reorg-processing-and-state-availability&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;reorg-processing-and-state-availability&quot;&gt;Reorg processing and state availability&lt;/h2&gt;
+
+&lt;p&gt;It is common knowledge that the application state of eth1 can become quite large. As such, eth1 clients usually only store exactly one full copy of this state.&lt;/p&gt;
+
+&lt;p&gt;In order to make state synchronization work, the application state of the latest finalized block BF must be available for download. We therefore recommend that clients which store exactly one full copy of the state should store the state of BF.&lt;/p&gt;
+
+&lt;p&gt;For the tree of non-finalized blocks beyond BF, the state diff of each block can be held in main memory. As new blocks are finalized, the client applies their diffs to the database, moving the persistent state forward. Storing diffs in memory allows for efficient reorg processing: when the eth2 client detects a reorg from block bx to block by, it first determines the common ancestor ba. It can then submit all blocks Ba+1…By for processing. When the eth1 client detects that a block has already been processed because its state is available as a diff in memory, it can skip EVM processing of the block and just move its head state reference to the new block.&lt;/p&gt;
+
+&lt;p&gt;While reorgs below BF cannot happen during normal operation of the beacon chain, it may still be necessary to roll back to an earlier state when EVM processing flaws cause the client to deviate from the canonical chain. As a safety net for this exceptional case, we recommend that eth1 clients to maintain a way to manually reorg up to 90,000 blocks (roughly 2 weeks), as this would provide sufficient time to fix issues.&lt;/p&gt;
+
+&lt;p&gt;To make this ‘manual intervention reorg’ work, eth1 client can maintain backward diffs in a persistent store. If an intervention is requested, these diffs can be incrementally applied to the state of BF, resetting the client to an earlier state.&lt;/p&gt;
+
+&lt;h2 id=&quot;issues&quot;&gt;Issues&lt;/h2&gt;
+
+&lt;p&gt;In early review of this scheme, two issues were discovered. Both stem from our misunderstanding of eth2 finalization semantics.&lt;/p&gt;
+
+&lt;p&gt;(1) Since eth2 finalizes blocks only on epoch boundaries, it wants to call final(B) only for epoch blocks. This could be handled a bit better by also using proc(B) in the sync trigger.&lt;/p&gt;
+
+&lt;p&gt;(2) While finalization will work within ~64 blocks in the happy case, it can take up to 2 weeks to finalize in the event of a network partition. Since the maximum number of non-finalized blocks is so much larger than we initially anticipated, it will not be possible to use BF as the persistent state block.&lt;/p&gt;
+
+&lt;p&gt;We have decided to tackle this issue in the following way:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;At head H, define the ‘calcified’ block BC with C = max(H-512, F). This puts an upper bound of 512 blocks on the number of states kept in memory.&lt;/li&gt;
+  &lt;li&gt;Define that clients should keep the state of BC in persistent storage.&lt;/li&gt;
+  &lt;li&gt;Use BC as the initial sync target. This has implications on the sync trigger because the eth1 client can no longer rely on final(B) to start sync (BC may be non-final).&lt;/li&gt;
+  &lt;li&gt;Add a new call &lt;strong&gt;**reset(B)&lt;/strong&gt;** to reset the eth1 client to a historical block. Require that clients must be able to satisfy any reset in range BF…BH. They will probably have to implement something like the persistent reverse diffs recommended in the reorg section.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Adding the calcified block also adds some tricky new corner cases and failure modes. In particular, if the eth1 client just performed snap sync, it will not be able to reorg below BC, because reverse diffs down to BF will not be available. We may solve this by recommending that nodes should attempt snap sync if reset(B) cannot be satisfied. For sure, some nodes will be synced enough to serve the target state. In the absolute worst case, we need to make reverse diffs available for download in snap sync.&lt;/p&gt;
+
+&lt;h1 id=&quot;fork-choice&quot;&gt;Fork choice&lt;/h1&gt;
+
+&lt;p&gt;[https://hackmd.io/QFm6Ih_-Si6&lt;em&gt;kSLCWTZQyw?view](https://hackmd.io/QFm6Ih&lt;/em&gt;-Si6_kSLCWTZQyw?view)&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Notes:&lt;/em&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;Eth1 data&lt;/strong&gt;: Eth1 data included in a block must correspond to the Eth1 state produced by the execution part of the parent block. This acts as an additional filter on the block subtree under consideration for the beacon block fork choice.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;helpers&quot;&gt;Helpers&lt;/h2&gt;
+
+&lt;h3 id=&quot;get_eth1_data&quot;&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;get_eth1_data&lt;/code&gt;&lt;/h3&gt;
+
+&lt;p&gt;Let &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;get_eth1_data(application_state_root: Bytes32) -&amp;gt; Eth1Data&lt;/code&gt; be the function that returns the &lt;a href=&quot;https://github.com/ethereum/eth2.0-specs/blob/dev/specs/phase0/beacon-chain.md#eth1data&quot;&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Eth1Data&lt;/code&gt;&lt;/a&gt; obtained from the application state specified by &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;application_state_root&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Note&lt;/em&gt;: This is a function of the state of the beacon chain deposit contract. It can be read from the eth1 state and/or logs.&lt;/p&gt;
+
+&lt;h3 id=&quot;is_valid_eth1_data&quot;&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;is_valid_eth1_data&lt;/code&gt;&lt;/h3&gt;
+
+&lt;p&gt;Used by fork-choice handler, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;on_block&lt;/code&gt;, to&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-python=&quot;&gt;def is_valid_eth1_data(store: Store, block: BeaconBlock) -&amp;gt; boolean:
+    parent_state = store.block_states[block.parent_root]
+    expected_eth1_data = get_eth1_data(parent_state.application_state_root)
+    actual_eth1_data = block.body.eth1_data
+    
+    is_correct_root = expected_eth1_data.deposit_root == actual_eth1_data.deposit_root
+    is_correct_count = expected_eth1_data.deposit_count == actual_eth1_data.deposit_count
+    return is_correct_root and is_correct_count
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&quot;updated-fork-choice-handlers&quot;&gt;Updated fork-choice handlers&lt;/h2&gt;
+
+&lt;h3 id=&quot;on_block&quot;&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;on_block&lt;/code&gt;&lt;/h3&gt;
+
+&lt;p&gt;&lt;em&gt;Note&lt;/em&gt;: The only modification is the addition of the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Eth1Data&lt;/code&gt; validity assumption.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-python=&quot;&gt;def on_block(store: Store, signed_block: SignedBeaconBlock) -&amp;gt; None:
+    block = signed_block.message
+    # Parent block must be known
+    assert block.parent_root in store.block_states
+    # Make a copy of the state to avoid mutability issues
+    pre_state = copy(store.block_states[block.parent_root])
+    # Blocks cannot be in the future. If they are, their consideration must be delayed until the are in the past.
+    assert get_current_slot(store) &amp;gt;= block.slot
+
+    # Check that block is later than the finalized epoch slot (optimization to reduce calls to get_ancestor)
+    finalized_slot = compute_start_slot_at_epoch(store.finalized_checkpoint.epoch)
+    assert block.slot &amp;gt; finalized_slot
+    # Check block is a descendant of the finalized block at the checkpoint finalized slot
+    assert get_ancestor(store, block.parent_root, finalized_slot) == store.finalized_checkpoint.root
+    
+    # [Added] Check that Eth1 data is correct
+    assert is_valid_eth1_data(store, block)
+
+    # Check the block is valid and compute the post-state
+    state = pre_state.copy()
+    state_transition(state, signed_block, True)
+    # Add new block to the store
+    store.blocks[hash_tree_root(block)] = block
+    # Add new state for this block to the store
+    store.block_states[hash_tree_root(block)] = state
+
+    # Update justified checkpoint
+    if state.current_justified_checkpoint.epoch &amp;gt; store.justified_checkpoint.epoch:
+        if state.current_justified_checkpoint.epoch &amp;gt; store.best_justified_checkpoint.epoch:
+            store.best_justified_checkpoint = state.current_justified_checkpoint
+        if should_update_justified_checkpoint(store, state.current_justified_checkpoint):
+            store.justified_checkpoint = state.current_justified_checkpoint
+
+    # Update finalized checkpoint
+    if state.finalized_checkpoint.epoch &amp;gt; store.finalized_checkpoint.epoch:
+        store.finalized_checkpoint = state.finalized_checkpoint
+        
+        # Potentially update justified if different from store
+        if store.justified_checkpoint != state.current_justified_checkpoint:
+            # Update justified if new justified is later than store justified
+            if state.current_justified_checkpoint.epoch &amp;gt; store.justified_checkpoint.epoch:
+                store.justified_checkpoint = state.current_justified_checkpoint
+                return
+
+            # Update justified if store justified is not in chain with finalized checkpoint
+            finalized_slot = compute_start_slot_at_epoch(store.finalized_checkpoint.epoch)
+            ancestor_at_finalized_slot = get_ancestor(store, store.justified_checkpoint.root, finalized_slot)
+            if ancestor_at_finalized_slot != store.finalized_checkpoint.root:
+                store.justified_checkpoint = state.current_justified_checkpoint
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&quot;importing-a-very-large-side-fork&quot;&gt;Importing a very large Side Fork&lt;/h4&gt;
+
+&lt;p&gt;Tests that importing a very large side fork, which is larger than the canon chain,
+ but where the difficulty per block is kept low: this means that it will not
+ overtake the ‘canon’ chain until after it’s passed canon by about 200 blocks.&lt;/p&gt;
+
+&lt;p&gt;Details at:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;https://github.com/ethereum/go-ethereum/issues/18977&lt;/li&gt;
+  &lt;li&gt;https://github.com/ethereum/go-ethereum/pull/18988&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://github.com/ledgerwatch/erigon/commit/0953fd42cb30491625ce8f4f7c4e83b67dcfd5de#diff-5990e8d82dabd4aef2523b974606fcc515eb6bc0e10b35852aa6085d5fa31018L2174&quot;&gt;source, https://github.com/ledgerwatch/erigon/commit/0953fd42cb30491625ce8f4f7c4e83b67dcfd5de#diff-5990e8d82dabd4aef2523b974606fcc515eb6bc0e10b35852aa6085d5fa31018L2174&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;modifying-blocks&quot;&gt;Modifying Blocks&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-go=&quot;&gt;// OffsetTime modifies the time instance of a block, implicitly changing its
+// associated difficulty. It's useful to test scenarios where forking is not
+// tied to chain length directly.
+func (b *BlockGen) OffsetTime(seconds int64) {
+	b.header.Time.Add(b.header.Time, new(big.Int).SetInt64(seconds))
+	if b.header.Time.Cmp(b.parent.Header().Time) &amp;lt;= 0 {
+		panic(&quot;block time out of range&quot;)
+	}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&quot;block-number&quot;&gt;Block Number&lt;/h3&gt;
+
+&lt;div class=&quot;language-js highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;table class=&quot;rouge-table&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td class=&quot;rouge-gutter gl&quot;&gt;&lt;pre class=&quot;lineno&quot;&gt;1
+2
+3
+4
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;rouge-code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Utils&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;s&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;isMainNet&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;eth&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;getBlock&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;hash&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;===&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;isTestNet&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;eth&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;getBlock&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;hash&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;===&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;0x0cd786a2425d16f152c658316c423e6ce1181e15c3295826d7c9904cba9ce303&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;https://github.com/ethereum/EIPs/issues/161&lt;/p&gt;
+
+&lt;div class=&quot;language-go highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;table class=&quot;rouge-table&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td class=&quot;rouge-gutter gl&quot;&gt;&lt;pre class=&quot;lineno&quot;&gt;1
+2
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;rouge-code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;n&quot;&gt;common&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;HexToHash&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;05bef30ef572270f654746da22639a7a0c97dd97a7050b9e252391996aaeb689&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;common&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;HexToHash&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;7d05d08cbc596a2e5e4f13b80a743e53e09221b5323c3a61946b20873e58583f&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;fork-id&quot;&gt;Fork ID&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://github.com/ethereum/EIPs/blob/master/EIPS/eip-2124.md&quot;&gt;Fork ID EIP 2124&lt;/a&gt;&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;github.com/ethereum/EIPs/blob/master/EIPS/eip-2124.md&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;div class=&quot;language-go highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;table class=&quot;rouge-table&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td class=&quot;rouge-gutter gl&quot;&gt;&lt;pre class=&quot;lineno&quot;&gt;1
+2
+3
+4
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;rouge-code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;c&quot;&gt;// ID is a fork identifier as defined by EIP-2124.&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ID&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;Hash&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;byte&lt;/span&gt; &lt;span class=&quot;c&quot;&gt;// CRC32 checksum of the genesis block and passed fork block numbers&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;Next&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;uint64&lt;/span&gt;  &lt;span class=&quot;c&quot;&gt;// Block number of the next upcoming fork, or 0 if no forks are known&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;hardforks&quot;&gt;Hardforks&lt;/h2&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;ChainID&lt;/th&gt;
+      &lt;th&gt;1&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;HomesteadBlock&lt;/td&gt;
+      &lt;td&gt;1,150,000&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;DAOForkBlock&lt;/td&gt;
+      &lt;td&gt;1,920,000&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;DAOForkSupport&lt;/td&gt;
+      &lt;td&gt;true,&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;EIP150Block&lt;/td&gt;
+      &lt;td&gt;2,463,000&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;EIP150Hash&lt;/td&gt;
+      &lt;td&gt;0x2086799aeebeae135c246c65021c82b4e15a2c451340993aacfd2751886514f0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;EIP155Block&lt;/td&gt;
+      &lt;td&gt;2,675,000&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;EIP158Block&lt;/td&gt;
+      &lt;td&gt;2,675,000&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;ByzantiumBlock&lt;/td&gt;
+      &lt;td&gt;4,370,000&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;ConstantinopleBlock&lt;/td&gt;
+      &lt;td&gt;7,280,000&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;PetersburgBlock&lt;/td&gt;
+      &lt;td&gt;7,280,000&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;IstanbulBlock&lt;/td&gt;
+      &lt;td&gt;9,069,000&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;MuirGlacierBlock&lt;/td&gt;
+      &lt;td&gt;9,200,000&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;BerlinBlock&lt;/td&gt;
+      &lt;td&gt;12,244,000&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;LondonBlock&lt;/td&gt;
+      &lt;td&gt;12,965,000&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;ArrowGlacierBlock&lt;/td&gt;
+      &lt;td&gt;13,773,000&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;</content><author><name></name></author><category term="ethereum" /><category term="blockchain" /><category term="distributed computing" /><summary type="html">Ethereum Forking Notes</summary></entry><entry><title type="html">DAOsclerosis</title><link href="/primitives/2021/11/13/DAOSclarosis.html" rel="alternate" type="text/html" title="DAOsclerosis" /><published>2021-11-13T00:00:00+00:00</published><updated>2021-11-13T00:00:00+00:00</updated><id>/primitives/2021/11/13/DAOSclarosis</id><content type="html" xml:base="/primitives/2021/11/13/DAOSclarosis.html">&lt;h1 id=&quot;daosclarosis&quot;&gt;DAOsclarosis&lt;/h1&gt;
+
+&lt;h3 id=&quot;on-the-persistence-of-faulty-models-in-governance&quot;&gt;on the persistence of faulty models in governance&lt;/h3&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;Demosclerosis isn’t a problem you solve It’s a problem you manage.&lt;/strong&gt;
+Jonathan Rauch, &lt;br /&gt;
+DEMOSCLEROSIS&lt;br /&gt;
+The Silent Killer of American Government, 1994&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h4 id=&quot;the-dao-corollary&quot;&gt;The DAO Corollary&lt;/h4&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;F.K.A. Amdahl’s Corollary&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;The most efficient way to implement a piece of software is to do it all yourself.&lt;/p&gt;
+
+&lt;p&gt;No time is wasted communicating (or arguing); everything that needs to be done is done by the same person, which increases their ability to maintain the software; and the code is by default way more consistent.&lt;/p&gt;
+
+&lt;p&gt;Turns out “more efficient (&lt;em&gt;alt&lt;/em&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;effective&lt;/code&gt;)” doesn’t mean “faster (both in performance and time to delivery)”. When there are more people working on the same problem, we can parallelize more at once.&lt;/p&gt;
+
+&lt;p&gt;When we break work up across a team, in order to optimize for the team, we often have to put &lt;em&gt;more&lt;/em&gt; work in, individually, to ensure that the work can be efficiently parallelized. This includes explaining concepts, team meetings, code review, pair programming, etc. But by putting that work in, we make the work more parallelized, speeding up and allowing us to make greater gains in the future.&lt;/p&gt;
+
+&lt;h2 id=&quot;amdahls-law&quot;&gt;Amdahl’s Law&lt;/h2&gt;
+
+&lt;p&gt;Amdahl’s law can be formulated as follows:&lt;/p&gt;
+
+\[S_{\text {latency }}=\frac{1}{(1-p)+\frac{p}{s}}\]
+
+&lt;p&gt;In other words, it predicts the maximum potential speedup (Slatency), given a proportion of the task, p, that will benefit from improved (either more or better) resources, and a parallel speedup factor, s.&lt;/p&gt;
+
+&lt;p&gt;To demonstrate, if we can speed up 10% of the task (p=0.1) by a factor of 5 (s=5), we get the following:&lt;/p&gt;
+
+\[S_{\text {latency }}=\frac{1}{(1–0.1)+\frac{0.1}{5}} \approx 1.09\]
+
+&lt;p&gt;That’s about a 9% speedup — Acceptable.&lt;/p&gt;
+
+&lt;p&gt;However, if we can speed up 90% of the task (p=0.9) by a factor of 5 (s=5), we get the following:&lt;/p&gt;
+
+\[S_{\text {latency }}=\frac{1}{(1–0.9)+\frac{0.9}{5}} \approx 3.58\]
+
+&lt;p&gt;That’s roughly a 250% increase! Big enough that it’s actually worth creating twice as much work; it still pays off, assuming the value of the work dwarfs the cost of the resources.&lt;/p&gt;
+
+&lt;p&gt;$s \rightarrow \infty$, which means $\frac{p}{s} \rightarrow 0$, so we can also drop the $\frac{p}{s}$ term if we can afford potentially infinite resources at no additional cost.&lt;br /&gt;
+\(S_{\text {latency }}=\frac{1}{1–0.9}=10\)&lt;/p&gt;
+
+&lt;p&gt;In other words, if 90% of the work can be parallelised, we can achieve a theoretical maximum speedup of 10x, or a 900% increase. This is highly unlikely, but gives us a useful upper bound to help us identify where the bottleneck lies.&lt;/p&gt;
+
+&lt;h2 id=&quot;generalizing-a-pid-to-the-amount-of-work&quot;&gt;Generalizing a PID to the amount of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;work&lt;/code&gt;&lt;/h2&gt;
+
+&lt;p&gt;Typically, we start off with a completely serial process. In order to parallelize, we need to do &lt;em&gt;more&lt;/em&gt; work. It doesn’t come for free.&lt;/p&gt;
+
+&lt;p&gt;This means that when computing $s$, &lt;strong&gt;the parallel speedup&lt;/strong&gt;, we should divide it by the &lt;strong&gt;cost of parallelization&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;For example, if the cost is &lt;em&gt;2,&lt;/em&gt; that means that making the work &lt;em&gt;parallelisable&lt;/em&gt; (without actually increasing the number of resources) makes the parallel portion take twice as long as it used to. (The &lt;strong&gt;serial&lt;/strong&gt; portion is unchanged.)&lt;/p&gt;
+
+&lt;p&gt;So, if we take the example from earlier, where 90% of the work is parallelisable &lt;em&gt;but&lt;/em&gt; it costs twice as much to parallelized, we’ll get the following result:&lt;br /&gt;
+\(S_{\text {latency }}=\frac{1}{(1–0.9)+\frac{0.9}{\frac{5}{2}}} \approx 2.18\)&lt;br /&gt;
+It’s still about a $117 \%$ increase in output!&lt;br /&gt;
+However, if $p=0.1$, then there’s really very little point in adding more resources.&lt;/p&gt;
+
+\[S_{\text {latency }}=\frac{1}{(1–0.1)+\frac{0.1}{\frac{5}{2}}} \approx 1.06\]
+
+&lt;p&gt;And if the cost of parallelisation is greater than the potential speedup, bad things happen:&lt;br /&gt;
+\(S_{\text {latency }}=\frac{1}{(1–0.1)+\frac{0.1}{\frac{5}{20}}} \approx 0.769\)&lt;/p&gt;
+
+&lt;p&gt;Adding 4 more resources slows us down by 23%. Many of us have seen this happen in practice with poor parallelization techniques — poor usage of locks, resource contention (especially with regards to I/O), or even redundant work due to mismanaged job distribution.&lt;/p&gt;
+
+&lt;h2 id=&quot;so-what-does-it-all-mean&quot;&gt;So, What Does It All Mean?&lt;/h2&gt;
+
+&lt;p&gt;Amdahl’s law tells us something very insightful:&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;When the value of your work is much greater than the cost, you should optimize for parallelism, not efficiency&lt;/strong&gt;.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;The cost of a weekly two-hour team meeting is high (typically in the $1000s each time), but if it means that you can have 7 people on the team, not 3, it’s often worth it.&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;[https://en.wikipedia.org/wiki/Gustafson's_law](https://en.wikipedia.org/wiki/Gustafson%27s_law)&quot;&gt;Delivering faster means you can deliver more.&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Better to have 10 people working on 5 problems and doing a better job than it is to have 10 people working on 10 problems.&lt;/p&gt;
+
+&lt;p&gt;The former will lead to fewer conflicts, fewer defects and a much more motivated team. I.e. $p$ and $s$ produce greater returns, faster than the amount of work.&lt;/p&gt;
+
+&lt;p&gt;Conversely, if all the knowledge of how the product works is in one person’s head, $p≈0$. While there’s no impact to efficiency this way, it limits our ability to produce, because one person can only do so much. Adding more people just makes things slower.&lt;/p&gt;
+
+&lt;h2 id=&quot;proposal&quot;&gt;&lt;strong&gt;Proposal&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;We introduce a proposal to replace the current regime of quorum based on-chain voting with a new voting regime: Majordomo.&lt;/p&gt;
+
+&lt;p&gt;Majordomo is a tribute based governance system. In exchange for delegation of governance voting rights, a &lt;em&gt;tribute&lt;/em&gt; is paid to secure this right. There is no opt-out of delegation. The &lt;em&gt;majordomo&lt;/em&gt; regulates protocol parameters as well as appoints &lt;em&gt;tribunes&lt;/em&gt; through a &lt;em&gt;patronage&lt;/em&gt; system. A patronage system is the mechanism of dispensing grants or favors to an address (i.e. a person or persons). Grants can be currency, privilage (e.g. privilaged access to a non-public protocol feature), grants of patent (e.g. extending a franchise right to establish a subsidiary on another chain), etc.&lt;/p&gt;
+
+&lt;h2 id=&quot;background&quot;&gt;&lt;strong&gt;Background&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;h2 id=&quot;motivation&quot;&gt;&lt;strong&gt;Motivation&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;This is the problem statement. This is the &lt;strong&gt;why&lt;/strong&gt; of the YIP. It should clearly explain &lt;em&gt;why&lt;/em&gt; the current state of the protocol is inadequate.  It is critical that you explain why the change is needed. For instance, if the YIP proposes changing how something is calculated, you must address why the current calculation is inaccurate or wrong. This section may also include why certain design choices were made over others, and can include data from previous discussions and forum posts.&lt;/p&gt;
+
+&lt;h2 id=&quot;specification&quot;&gt;&lt;strong&gt;Specification&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;h2 id=&quot;axiom-institutions-are-defined-as-stable-patterns-for-regulating-human-behavior&quot;&gt;Axiom: Institutions are defined as stable patterns for regulating human behavior.&lt;/h2&gt;
+&lt;p&gt;In an opt-in organization like a DAO, a constitution serves as a contract for participation—by participating, one implicitly or explicitly agrees to abide by the organization’s constitution. By regulating decision-making in an organization, constitutions help us set the rules for how we make rules, modify existing institutions, and even design new institutions. Good constitutions help institutions adapt to new circumstances, new memberships, and even new code (e.g. if any underlying smart contracts are changed).&lt;/p&gt;
+
+&lt;hr /&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;em&gt;Components of an Institution, its Constitution and Technological Infrastructure/Tools&lt;/em&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;table&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;**![&lt;/td&gt;
+      &lt;td&gt;641.2137931034482x388.9736842105263](https://lh5.googleusercontent.com/c2iCpCsmwET4kQ9Oyn4LzTpllGsmtHLj7qpa8f2Fi0U7EAHiVaPCB43lQO8ClVWDSC0naLo0lxloOr0rbNHDbpyzwWsfsVAVuAn-fDiJ0QKSORxmX_iREglQ3BYZqOui8HL7U1ND)**&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h3 id=&quot;defining-patterns&quot;&gt;Defining Patterns&lt;/h3&gt;
+
+&lt;p&gt;We use the term “pattern” meaning relevant to our protocol, and “anti-pattern” to represent a more subjective interpretation or one that is hard to automate to determine should it be included or not.&lt;/p&gt;
+
+&lt;h4 id=&quot;patterns&quot;&gt;Patterns&lt;/h4&gt;
+&lt;p&gt;Proposals that addresses a problem that has not been defined
+Proposals that addresses a problem that no longer exists
+The Proposals addresses more than one problem
+Proposals that has no stated purpose
+The language of the Proposals is vague or complex
+Proposals is unable to achieve its stated goal&lt;/p&gt;
+
+&lt;h2 id=&quot;viable-governance-at-scale&quot;&gt;Viable Governance at Scale&lt;/h2&gt;
+
+&lt;h3 id=&quot;axioms-and-principles&quot;&gt;Axioms and Principles&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;Requirements (the need for a new law) is realized by Principle (the to-be law)&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;If you are in the business of producing laws, then the law is a Business Object&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://i.imgur.com/GyzuuBU.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;Legal elements are not &lt;em&gt;passive&lt;/em&gt;.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;This document does not seek to define an &lt;em&gt;imperative&lt;/em&gt; set but rather &lt;em&gt;relational&lt;/em&gt; sets.&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;legal-patterns-for-finding-important-laws&quot;&gt;Legal Patterns for Finding Important Laws&lt;/h2&gt;
+
+&lt;p&gt;We use the term “pattern” meaning relevant to our protocol, and “anti-pattern” to represent a more subjective interpretation or one that is hard to automate to determine should it be included or not.&lt;/p&gt;
+
+&lt;h2 id=&quot;systems-based-approach&quot;&gt;Systems Based Approach&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://i.imgur.com/gzsSccc.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;patterns-1&quot;&gt;Patterns&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Law that addresses a problem that has not been defined&lt;/li&gt;
+  &lt;li&gt;Law that addresses a problem that no longer exists&lt;/li&gt;
+  &lt;li&gt;The law addresses more than one problem&lt;/li&gt;
+  &lt;li&gt;Law that has no stated purpose&lt;/li&gt;
+  &lt;li&gt;The language of the law is vague or complex&lt;/li&gt;
+  &lt;li&gt;Law is unable to achieve its stated goal&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;anti-patterns&quot;&gt;Anti-Patterns&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Laws that address problems that have not been defined&lt;/li&gt;
+  &lt;li&gt;Laws that address problems that no longer exist&lt;/li&gt;
+  &lt;li&gt;Laws that address more than one problem in different domains&lt;/li&gt;
+  &lt;li&gt;Laws that lack a stated, measurable problem solving the goal, or purpose&lt;/li&gt;
+  &lt;li&gt;Laws that fail to achieve their goal or lack stated goals&lt;/li&gt;
+  &lt;li&gt;Laws that lack a citation of references&lt;/li&gt;
+  &lt;li&gt;Laws whose burdens are greater than their problem-solving benefit&lt;/li&gt;
+  &lt;li&gt;Laws whose problem-solving benefit and burdens are equal&lt;/li&gt;
+  &lt;li&gt;Laws whose results cannot be measured&lt;/li&gt;
+  &lt;li&gt;Laws that interfere with other laws&lt;/li&gt;
+  &lt;li&gt;Laws that duplicate other laws&lt;/li&gt;
+  &lt;li&gt;Requires Review&lt;/li&gt;
+  &lt;li&gt;Laws that are not enforced*&lt;/li&gt;
+  &lt;li&gt;Laws that are overly vague or complex*&lt;/li&gt;
+  &lt;li&gt;Laws that have not undergone QA analysis within a specified time frame&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;legal-primitives-for-smart-contract-events--emits&quot;&gt;Legal Primitives for Smart Contract Events / Emits&lt;/h2&gt;
+
+&lt;p&gt;Now that we have established legal patterns and a legal classified, we can begin to map out how these relationships present themselves, either by acting upon, being acted upon, events, etc.&lt;/p&gt;
+
+&lt;h3 id=&quot;primitves-layer&quot;&gt;Primitves Layer&lt;/h3&gt;
+&lt;p&gt;Primitives
+List of Legal Primitive Mechanisms
+PrimitiveEvent
+ExercisePrimitive
+AllocationPrimitive
+ContractFormationPrimitive
+ExecutionPrimitive
+InceptionPrimitive
+ObservationPrimitive
+QuantityChangePrimitive
+ResetPrimitive
+TermsChangePrimitive
+TransferPrimitive&lt;/p&gt;
+
+&lt;h2 id=&quot;majordomo&quot;&gt;MajorDomo&lt;/h2&gt;
+
+&lt;p&gt;Moderation is not an ideology.  It is not an opinion.  It is not a thought.  It is an absence of thought
+In other words, the problem with moderation is that the “center” is not fixed.  It moves.  And since it moves, and people being people, people will try to move it.  This creates an incentive for violence, but we should not look at this as a moral problem, rather as an engineering problem.  Any solution that solves the problem is acceptable.  Any solution that does not solve the problem is not acceptable.[^5]&lt;/p&gt;
+
+&lt;p&gt;sing a coinvote in this manner legitimizes any outcome of the community process, and [provides a convenient default](https://pagefair.com/blog/2015/the-tyranny-of-the-default/) for users to converge on. Otherwise phrased, most users will likely accept most outcomes of most coinvotes, so rigging such votes can allow a malicious actor to impose their will on an ecosystem where the majority of honest actors disagree (but follow along anyway, because the vote appears clean).  This, along with the direct benefit provided by many consensus rule changes to actors within the system (consider for example the setting of block rewards, or the setting of block size / participation hardware requirements, or the setting of minimum stake, etc.) means that tampering with such votes is often directly financially incentivized.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Populations will accept vote outcomes regardless of how bitterly they disagree with the outcome or how nonsensical it seems… if they accept the process.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;deciding whether there is an attack in the presence of a credible threat is a non-trivial social consensus problem vulnerable to false flag attacks to stall progress.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h3 id=&quot;glowing-in-the-dark&quot;&gt;Glowing in the dark&lt;/h3&gt;
+
+&lt;p&gt;Glowing in the dark, flying or sewn into the story with phosphorescent thread. In other words, infiltrators being spotted. Or being so obvious in their work that it may be impossible not to spot them. Infiltrators have been a thing since humanity started forming groups and the notion of counter-intelligence is as old as humanity itself [^4]. This remains a credible threat especially in systems that depend only on capital (i.e token holdings) to determine voting weight.&lt;/p&gt;
+
+&lt;p&gt;We can conclude that on-chain token-based voting systems essentially emulate plutocracy.  If they do not directly emulate plutocracy, perhaps through some external system of identity, they can be made to emulate plutocracy through the buying and selling of constraints on user actions.&lt;/p&gt;
+
+&lt;p&gt;Schemes like quadratic voting, that have been proposed in a blockchain context, explicitly allow vote buying and attempt to mitigate its impact through an identity-based scheme.  Such schemes may have unforeseen properties in a blockchain environment, where identity is a murky concept&lt;/p&gt;
+
+&lt;p&gt;It is unlikely that schemes that work well for in-person voting, boardroom meetings, or even coordinator-based protocols will simply port to blockchains without substantial additional work on defining and proving adversarial resilience to both technical and economic attacks in a blockchain-specific context. &lt;/p&gt;
+
+&lt;p&gt;It is clear that applying mechanisms that work in traditional information sciences or economics is not sufficient to analyze and represent the equilibria that will actually emerge when a given game is deployed (and matures to importance) in a permissionless blockchain environment.&lt;/p&gt;
+
+&lt;h6 id=&quot;tags-dao-legal&quot;&gt;tags: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;DAO&lt;/code&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Legal&lt;/code&gt;&lt;/h6&gt;
+
+&lt;p&gt;&lt;strong&gt;Definition: A condition A is said to be necessary for a condition B, if (and only if) the falsity (/nonexistence /non-occurrence) [as the case may be] of A guarantees (or brings about) the falsity (/nonexistence /non-occurrence) of B.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Definition of “sufficient condition&lt;/strong&gt;
+Definition: A condition A is said to be sufficient for a condition B, if (and only if) the truth (/existence /occurrence) [as the case may be] of A guarantees (or brings about) the truth (/existence /occurrence) of B.&lt;/p&gt;
+
+&lt;p&gt;[^4, What Glowies Mean: Online Spies, The Atlantic](https://www.theatlantic.com/politics/archive/2021/01/what-glowies-mean-online-spies/617717/)&lt;/p&gt;
+
+&lt;p&gt;[^5] Curtivs Yavin, Formalist Manifesto&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;a href=&quot;https://academic.oup.com/ijpor/article-abstract/23/4/485/708041?redirectedFrom=fulltext&quot;&gt;Affective Priming in Political Campaigns: How Campaign-Induced Emotions Prime Political Opinions&lt;/a&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;a href=&quot;https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2367870&quot;&gt;The Law of Deliberative Democracy: Seeding the Field&lt;/a&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;a href=&quot;https://capitalresearch.org/article/the-lefts-next-culture-war-part-2/&quot;&gt;The Left’s Next Culture War: Using Corporate Rating Indexes&lt;/a&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;</content><author><name></name></author><category term="ethereum" /><category term="blockchain" /><category term="distributed computing" /><category term="dao" /><category term="governance" /><summary type="html">DAOsclarosis</summary></entry><entry><title type="html">Hello, world!</title><link href="/primitives/2020/07/25/hello,-world!.html" rel="alternate" type="text/html" title="Hello, world!" /><published>2020-07-25T00:00:00+00:00</published><updated>2020-07-25T00:00:00+00:00</updated><id>/primitives/2020/07/25/hello,-world!</id><content type="html" xml:base="/primitives/2020/07/25/hello,-world!.html">&lt;p&gt;The post in website based on Jekyll is typically written with Markdown, which is just a lightweight markup language with plain text formatting syntax. This makes it very easy to create and publish posts.&lt;/p&gt;
 
 &lt;h2 id=&quot;create-a-post&quot;&gt;Create a Post&lt;/h2&gt;
 

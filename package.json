@@ -4,7 +4,8 @@
   "description": "blog",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "compile": "bundle exec jekyll build",
+    "deploy": "npx gh-pages -d _site/"
   },
   "repository": {
     "type": "git",
