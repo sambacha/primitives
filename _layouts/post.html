@@ -1,0 +1,78 @@
+---
+layout: default
+---
+
+{%- include header.html type='post' -%}
+
+<!-- Post Content -->
+<style>
+    /* Place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position:    absolute;
+            left:        -0.75em;
+            font-size:   1.1em;
+            margin-top : 0.1em;
+        }
+    }
+</style>
+<article>
+    <div class="container">
+        <div class="row">
+            <!-- Post Container -->
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 post-container">
+                {%- if page.multilingual -%}
+                    {%- include language-selector.html -%}
+                {%- endif -%}
+
+                {{ content }}
+
+                <!-- Post Pager -->
+                <div>
+                    <hr style="visibility: hidden;">
+                    <ul class="pager">
+                        {%- if page.previous.url -%}
+                        <li class="previous">
+                            <a href="{{ page.previous.url | prepend: site.baseurl | replace: '//', '/' }}" data-toggle="tooltip" data-placement="top" title="{{ page.previous.title }}">
+                                Previous<br>
+                                <span>{{ page.previous.title }}</span>
+                            </a>
+                        </li>
+                        {%- endif -%}
+                        {%- if page.next.url -%}
+                        <li class="next">
+                            <a href="{{ page.next.url | prepend: site.baseurl | replace: '//', '/' }}" data-toggle="tooltip" data-placement="top" title="{{ page.next.title }}">
+                                Next<br>
+                                <span>{{ page.next.title }}</span>
+                            </a>
+                        </li>
+                        {%- endif -%}
+                    </ul>
+                    <hr style="visibility: hidden;">
+                </div>
+
+                {%- if site.comments_repository -%}
+                    {%- include comments.html -%}
+                {%- endif -%}
+            </div>
+
+            {%- unless page.no_catalog -%}
+            <!-- Side Catalog Container -->
+            <div class="col-lg-2 col-lg-offset-0 visible-lg-block sidebar-container catalog-container">
+                <div class="side-catalog">
+                    <hr class="hidden-sm hidden-xs">
+                    <h5>
+                        <a class="catalog-toggle" href="#">CATALOG</a>
+                    </h5>
+                    <ul class="catalog-body"></ul>
+                </div>
+            </div>
+            {%- endunless -%}
+
+            <!-- Sidebar Container -->
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 sidebar-container">
+                {%- include featured-tags.html bottom=true -%}
+            </div>
+        </div>
+    </div>
+</article>

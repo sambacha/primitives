@@ -1,0 +1,48 @@
+# Site settings
+title: Primitives
+description: Engineering Blog
+header_img: /assets/img/home.jpeg
+baseurl: /primitives
+owner: sambacha
+published_at: 2021
+
+# Sidebar settings
+sidebar: true
+sidebar_avatar: /assets/img/avatar.jpeg
+sidebar_about_description: 0xJanitor
+
+RSS:                true
+email:              sam@manifoldfinance.com
+github_username:    sambacha
+
+
+# Google Analytics settings (https://analytics.google.com/)
+ga_measurement_id:
+
+# Comments settings (https://utteranc.es/)
+# You must use your own repository, otherwise it won't work.
+comments_repository: sambacha/comments
+
+# Build settings
+paginate: 10
+timezone: UTC
+kramdown:
+  syntax_highlighter_opts:
+    block:
+      line_numbers: true
+collections:
+  pages:
+    output: true
+    permalink: /:path/
+defaults:
+  - scope:
+      path: _posts
+    values:
+      layout: post
+plugins:
+  - jekyll-feed
+  - jekyll-paginate
+  - jekyll-seo-tag
+  - jekyll-sitemap
+  - jemoji
+  - rouge
