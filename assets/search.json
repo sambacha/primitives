@@ -17,6 +17,12 @@
             "url"      : "/primitives/2021/11/13/DAOSclarosis.html",
             "date"     : "2021-11-13 00:00:00 +0000"
         },{
+            "title"    : "MEV Boost",
+            "subtitle" : "on the persistence of faulty models in governance",
+            "tags"     : "ethereum, blockchain, distributed computing, dao, governance",
+            "url"      : "/primitives/2021/11/07/MEV_Boost.html",
+            "date"     : "2021-11-07 19:04:27 +0000"
+        },{
             "title"    : "Hello, world!",
             "subtitle" : "Test example",
             "tags"     : "Jekyll, Markdown",

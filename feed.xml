@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="/primitives/feed.xml" rel="self" type="application/atom+xml" /><link href="/primitives/" rel="alternate" type="text/html" /><updated>2021-11-15T11:41:38+00:00</updated><id>/primitives/feed.xml</id><title type="html">Primitives</title><subtitle>Engineering Blog</subtitle><entry><title type="html">harm reduction for miners</title><link href="/primitives/2021/11/15/Harm_Reduction_for_miners.html" rel="alternate" type="text/html" title="harm reduction for miners" /><published>2021-11-15T00:00:00+00:00</published><updated>2021-11-15T00:00:00+00:00</updated><id>/primitives/2021/11/15/Harm_Reduction_for_miners</id><content type="html" xml:base="/primitives/2021/11/15/Harm_Reduction_for_miners.html">&lt;script async=&quot;&quot; src=&quot;https://platform.twitter.com/widgets.js&quot; charset=&quot;utf-8&quot;&gt;&lt;/script&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="/primitives/feed.xml" rel="self" type="application/atom+xml" /><link href="/primitives/" rel="alternate" type="text/html" /><updated>2021-11-18T20:44:00+00:00</updated><id>/primitives/feed.xml</id><title type="html">Primitives</title><subtitle>Engineering Blog</subtitle><entry><title type="html">harm reduction for miners</title><link href="/primitives/2021/11/15/Harm_Reduction_for_miners.html" rel="alternate" type="text/html" title="harm reduction for miners" /><published>2021-11-15T00:00:00+00:00</published><updated>2021-11-15T00:00:00+00:00</updated><id>/primitives/2021/11/15/Harm_Reduction_for_miners</id><content type="html" xml:base="/primitives/2021/11/15/Harm_Reduction_for_miners.html">&lt;script async=&quot;&quot; src=&quot;https://platform.twitter.com/widgets.js&quot; charset=&quot;utf-8&quot;&gt;&lt;/script&gt;
 
 &lt;h1 id=&quot;harm-reduction-for-miners&quot;&gt;Harm Reduction for Miners&lt;/h1&gt;
 
@@ -770,7 +770,164 @@ Definition: A condition A is said to be sufficient for a condition B, if (and on
   &lt;li&gt;
     &lt;p&gt;&lt;a href=&quot;https://capitalresearch.org/article/the-lefts-next-culture-war-part-2/&quot;&gt;The Left’s Next Culture War: Using Corporate Rating Indexes&lt;/a&gt;&lt;/p&gt;
   &lt;/li&gt;
-&lt;/ul&gt;</content><author><name></name></author><category term="ethereum" /><category term="blockchain" /><category term="distributed computing" /><category term="dao" /><category term="governance" /><summary type="html">DAOsclarosis</summary></entry><entry><title type="html">Hello, world!</title><link href="/primitives/2020/07/25/hello,-world!.html" rel="alternate" type="text/html" title="Hello, world!" /><published>2020-07-25T00:00:00+00:00</published><updated>2020-07-25T00:00:00+00:00</updated><id>/primitives/2020/07/25/hello,-world!</id><content type="html" xml:base="/primitives/2020/07/25/hello,-world!.html">&lt;p&gt;The post in website based on Jekyll is typically written with Markdown, which is just a lightweight markup language with plain text formatting syntax. This makes it very easy to create and publish posts.&lt;/p&gt;
+&lt;/ul&gt;</content><author><name></name></author><category term="ethereum" /><category term="blockchain" /><category term="distributed computing" /><category term="dao" /><category term="governance" /><summary type="html">DAOsclarosis</summary></entry><entry><title type="html">MEV Boost</title><link href="/primitives/2021/11/07/MEV_Boost.html" rel="alternate" type="text/html" title="MEV Boost" /><published>2021-11-07T19:04:27+00:00</published><updated>2021-11-07T19:04:27+00:00</updated><id>/primitives/2021/11/07/MEV_Boost</id><content type="html" xml:base="/primitives/2021/11/07/MEV_Boost.html">&lt;h1 id=&quot;mev-boost-merge-ready-flashbots-architecture&quot;&gt;MEV-Boost: Merge ready Flashbots Architecture&lt;/h1&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;a href=&quot;https://ethresear.ch/t/mev-boost-merge-ready-flashbots-architecture/11177&quot;&gt;source via ethresear.ch/t/mev-boost-merge-ready-flashbots-architecture/11177&lt;/a&gt;; The Merge - Ethereum Research&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;excerpt&quot;&gt;Excerpt&lt;/h2&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;MEV-Boost: Merge ready Flashbots Architecture This architecture is a work in progress - the final design will reflect the feedback collected and lessons learned through implementation and will be posted to the Flashbots documentation  This document outlines the design for a marketplace for block construction (often referred to as block proposer / block builder separation or PBS) compatible with the upcoming Ethereum merge fork. This trust based solution closely resembles the current Flashbots a…&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;em&gt;This architecture is a work in progress - the final design will reflect the feedback collected and lessons learned through implementation and will be posted to the &lt;a href=&quot;https://docs.flashbots.net/flashbots-auction/overview&quot;&gt;Flashbots documentation 17&lt;/a&gt;&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;This document outlines the design for a marketplace for block construction (often referred to as block proposer / block builder separation or PBS) compatible with the upcoming Ethereum merge fork. This trust based solution closely resembles the &lt;a href=&quot;https://docs.flashbots.net/flashbots-auction/overview&quot;&gt;current Flashbots auction design 17&lt;/a&gt; with modifications to enable solo staker participation without introducing changes to Ethereum consensus. This solution aims to bridge the gap to a &lt;a href=&quot;https://ethresear.ch/t/proposer-block-builder-separation-friendly-fee-market-designs/9725&quot;&gt;permissionless PBS design 15&lt;/a&gt; which should be strongly considered for the cleanup fork in order to improve decentralization.&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Thank you to the Flashbots team, EF research team, client implementation teams, and staking service providers for the feedback and countless hours of discussion which went into this document.&lt;/em&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;terminology&quot;&gt;Terminology&lt;/h2&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;a href=&quot;https://ethresear.ch/t/mev-boost-merge-ready-flashbots-architecture/11177#terminology-2&quot;&gt;source&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;consensus client&lt;/strong&gt;: the client in charge of ethereum proof of stake consensus&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;execution client&lt;/strong&gt;: the client in charge of ethereum virtual machine execution&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;execution payload&lt;/strong&gt;: a message containing the complete content of an unsigned execution payload to be added into a beacon block&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;mev-boost middleware&lt;/strong&gt;: a new piece of software that sits between the consensus client and the execution client to outsource block construction&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;proposer&lt;/strong&gt;: party which signs and submits a beacon block to the network, often referred to as the validator&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;user&lt;/strong&gt;: a normal ethereum user who sends transactions&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;searcher&lt;/strong&gt;: advanced ethereum user specialized in finding MEV opportunities and sending advanced transaction types like bundles&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;builder&lt;/strong&gt;: party specialized in the construction of ethereum execution payloads using transactions received from users and searchers (trusted by searchers and users for fair inclusion)&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;relay&lt;/strong&gt;: party specialized in DoS protection and networking who validates and routes execution payloads to proposers (trusted by builders for fair routing and by proposers for block validity, accuracy, and data availability)&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;escrow&lt;/strong&gt;: party tasked with providing redundant data availability for proposed execution payloads (trusted by relay for data privacy)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;architecture&quot;&gt;Architecture&lt;/h2&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;a href=&quot;https://ethresear.ch/t/mev-boost-merge-ready-flashbots-architecture/11177#architecture-3&quot;&gt;source&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;This proposed architecture allows validators to outsource the task of block construction to a network of third party block builders. While the validators have the ability to include any payload into the chain, we believe network neutrality and validator revenues are maximized when the validator’s job is limited to selecting the payload which pays them the most ETH.&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://ethresear.ch/uploads/default/original/2X/c/c9fa06a58cabde886291b28dedb643abd968623c.png&quot; title=&quot;image&quot;&gt;&lt;img src=&quot;https://ethresear.ch/uploads/default/optimized/2X/c/c9fa06a58cabde886291b28dedb643abd968623c_2_690x216.png&quot; alt=&quot;image&quot; /&gt;&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;The block construction process involves the following steps:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Users and searchers send transactions to block builders through the public p2p txpool or through direct channels.&lt;/li&gt;
+  &lt;li&gt;Builders construct execution payloads using these transactions as well as header parameters provided by validators. Builders may directly set the validator’s &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;feeRecipient&lt;/code&gt; address as the coinbase address of the payload, or the builders may set their own address and include a transaction which transfers to the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;feeRecipient&lt;/code&gt; in the payload.&lt;/li&gt;
+  &lt;li&gt;Relays receive execution payloads from builders and verify the validity of the payloads as well as calculate the payload value (amount of ETH paid to the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;feeRecipient&lt;/code&gt;).&lt;/li&gt;
+  &lt;li&gt;Escrows receive the full execution payloads from relays to provide data availability.&lt;/li&gt;
+  &lt;li&gt;Validators receive &lt;a href=&quot;https://github.com/ethereum/consensus-specs/blob/a45ee9bf5b1fde766d69e551a6b1a21fe2531734/specs/merge/beacon-chain.md#executionpayloadheader&quot;&gt;execution payload headers 8&lt;/a&gt; from relays (execution payloads stripped of the transaction content). The relay must attach an indication of the payload value to each header. The validator selects the most valuable header, signs the payload, and returns it to the relay and escrow to be propagated to the network.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Note that a single entity may play multiple roles in this system. The roles are labeled separately as they each lend themselves to some level of specialization. For redundancy and decentralization, there should be multiple independent parties competing in each role. In the future, a permissionless PBS design at the consensus level will remove the need for relays and escrows.&lt;/p&gt;
+
+&lt;p&gt;On the validator side, this architecture makes use of an independent middleware called MEV-Boost which sits between the consensus client and the execution client. This middleware handles communication with the relays, the profit switching logic for selecting the most valuable payload, and a fallback mechanism to a local execution client if relays get disconnected. Using a middleware instead of direct modification of the consensus clients allows for maintaining each component independently and provide cross client compatibility with minimal changes to the &lt;a href=&quot;https://github.com/ethereum/execution-apis/blob/5966998897f9526e050fd1438026ce8c94c93fb7/src/engine/specification.md&quot;&gt;engine api 2&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://ethresear.ch/uploads/default/original/2X/f/f0ef8cdd3c5b3f28bc7267aa920aac486338c273.png&quot; title=&quot;image&quot;&gt;&lt;img src=&quot;https://ethresear.ch/uploads/default/optimized/2X/f/f0ef8cdd3c5b3f28bc7267aa920aac486338c273_2_690x420.png&quot; alt=&quot;image&quot; /&gt;&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;It’s important to note that relays should only be used for payloads during block construction - relays are not meant to be used for other roles performed by the execution clients like verifying blocks for attestations. Validators should always fall back to local payload construction if relays are unavailable.&lt;/p&gt;
+
+&lt;p&gt;Since the &lt;a href=&quot;https://github.com/ethereum/consensus-specs/blob/a45ee9bf5b1fde766d69e551a6b1a21fe2531734/specs/merge/beacon-chain.md#executionpayloadheader&quot;&gt;execution payload header 8&lt;/a&gt; does not include the transaction content, the risk of validators frontrunning is eliminated. This design allows solo stakers to participate in MEV thus reducing the incentive for economic centralization. However, this design also requires validators to trust the relay to filter invalid payloads, accurately report payload value, and reveal the transaction content once the header is signed. Escrows are introduced to improve data availability by duplicating the transaction content across multiple providers.&lt;/p&gt;
+
+&lt;p&gt;Summary:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Validator trust relay for data availability, payload validity, and payload value accuracy&lt;/li&gt;
+  &lt;li&gt;Users and searchers trust builders, relays, and escrow for frontrunning protection&lt;/li&gt;
+  &lt;li&gt;Minimal changes to consensus clients due to middleware architecture&lt;/li&gt;
+  &lt;li&gt;Adds additional round trip communication between relay and validator to block proposal latency&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;discussion-points&quot;&gt;&lt;a href=&quot;https://ethresear.ch/t/mev-boost-merge-ready-flashbots-architecture/11177#discussion-points-4&quot;&gt;Discussion Points&lt;/a&gt;&lt;/h2&gt;
+
+&lt;h3 id=&quot;client-modifications&quot;&gt;&lt;a href=&quot;https://ethresear.ch/t/mev-boost-merge-ready-flashbots-architecture/11177#client-modifications-5&quot;&gt;Client Modifications&lt;/a&gt;&lt;/h3&gt;
+
+&lt;p&gt;Flashbots will provide a formal specification similar to the &lt;a href=&quot;https://docs.flashbots.net/flashbots-auction/miners/mev-geth-spec/v04&quot;&gt;current MEV-Geth specification 2&lt;/a&gt; and will support client implementation teams to add MEV compatibility for the merge.&lt;/p&gt;
+
+&lt;p&gt;The current design requires the following modifications to the consensus client interface:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;enabling the validator to include and sign &lt;a href=&quot;https://github.com/ethereum/consensus-specs/blob/a45ee9bf5b1fde766d69e551a6b1a21fe2531734/specs/merge/beacon-chain.md#executionpayloadheader&quot;&gt;execution payload header 8&lt;/a&gt; in beacon blocks instead of full execution payloads&lt;/li&gt;
+  &lt;li&gt;enabling the validator to sign prefixed messages using the staking keys for authentication purposes&lt;/li&gt;
+  &lt;li&gt;enabling the consensus client to route a signed beacon block back to the middleware instead of attempting to send to the network&lt;/li&gt;
+  &lt;li&gt;enabling the consensus clients to fall back to a local or remote execution client if there is a fault in the middleware&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;There are no execution client changes currently required.&lt;/p&gt;
+
+&lt;h3 id=&quot;malicious-relay&quot;&gt;&lt;a href=&quot;https://ethresear.ch/t/mev-boost-merge-ready-flashbots-architecture/11177#malicious-relay-6&quot;&gt;Malicious Relay&lt;/a&gt;&lt;/h3&gt;
+
+&lt;p&gt;The most important security mechanism of this design is the ability for all validators to identify if a relay has turned malicious.&lt;/p&gt;
+
+&lt;p&gt;Lets assume the worse case scenario: there is a single relay which is connected to 100% of the validators. The relay begins proposing invalid blocks and lies about the value of the payloads such that the validators always selects them.&lt;/p&gt;
+
+&lt;p&gt;Under this scenario, a naive MEV-Boost implementation could cause the chain to halt as validators are no longer proposing valid blocks.&lt;/p&gt;
+
+&lt;p&gt;There are three ways for the relay to propose a bad payload:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;invalid payload: the payload breaks some consensus rules&lt;/li&gt;
+  &lt;li&gt;inacurate value: the payload proposed has a different value than claimed once executed&lt;/li&gt;
+  &lt;li&gt;missing data: the payload body was never revealed by the relay&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;To mitigate this, it must be possible to either&lt;/p&gt;
+
+&lt;p&gt;1: pre validate payload between multiple parties ahead of sending to validators or&lt;/p&gt;
+
+&lt;p&gt;2: for all validators in the network to identify when a relay has proposed a bad payload and automatically fallback to a safe alternative. Critically, this security mechanism must be robust in the face of relays who are adversarial towards each other.&lt;/p&gt;
+
+&lt;h3 id=&quot;communication-between-mev-boost-and-relays&quot;&gt;&lt;a href=&quot;https://ethresear.ch/t/mev-boost-merge-ready-flashbots-architecture/11177#communication-between-mev-boost-and-relays-7&quot;&gt;Communication between MEV-Boost and relays&lt;/a&gt;&lt;/h3&gt;
+
+&lt;p&gt;There are multiple alternatives for communication between MEV-Boost and the relays: push vs pull, direct vs p2p.&lt;/p&gt;
+
+&lt;p&gt;Care must be taken to ensure the following requirements are met in order to select the best implementation:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;it must protect validator privacy by not associating validator key and IP address&lt;/li&gt;
+  &lt;li&gt;it must have lowest possible latency&lt;/li&gt;
+  &lt;li&gt;it must be robust against adversarial relays / validators&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;risk-of-missed-slots&quot;&gt;&lt;a href=&quot;https://ethresear.ch/t/mev-boost-merge-ready-flashbots-architecture/11177#risk-of-missed-slots-8&quot;&gt;&lt;/a&gt;Risk of missed slots&lt;/h3&gt;
+
+&lt;p&gt;Missed slots can occur if the block proposer fails to propagate a block in time for sufficient attestations to be collected. In this case, the block proposer does not receive the base reward for the block (approx 0.025 eth at 10m eth staked) nor the transaction and MEV rewards. Since this architecture requires sending signed headers back to the relays / escrows before propagation to the attestors, it will be important to understanding what is an acceptable rate of missed slots and how to minimize it under normal network operating conditions.&lt;/p&gt;
+
+&lt;h3 id=&quot;header-parameters&quot;&gt;&lt;a href=&quot;https://ethresear.ch/t/mev-boost-merge-ready-flashbots-architecture/11177#header-parameters-9&quot;&gt;&lt;/a&gt;header parameters&lt;/h3&gt;
+
+&lt;p&gt;In order to produce valid blocks, builders and relayers must know all of the attributes of the &lt;a href=&quot;https://github.com/ethereum/execution-apis/blob/5966998897f9526e050fd1438026ce8c94c93fb7/src/engine/specification.md#executionpayloadv1&quot;&gt;execution payload header 1&lt;/a&gt;. It’s in the interest of validators to provide all the inputs required for block construction as early as possible. This allows builders to maximize the accuracy and compute time available for finding an optimal block construction.&lt;/p&gt;
+
+&lt;p&gt;All header attributes except from &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;coinbase&lt;/code&gt; can be derived by the builder based on their observed state of the network. It is up to the middleware to filter payloads built on incorrect states.&lt;/p&gt;
+
+&lt;h3 id=&quot;validator-authentication-and-feerecipient-address&quot;&gt;&lt;a href=&quot;https://ethresear.ch/t/mev-boost-merge-ready-flashbots-architecture/11177#validator-authentication-and-feerecipient-address-10&quot;&gt;&lt;/a&gt;validator authentication and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;feeRecipient&lt;/code&gt; address&lt;/h3&gt;
+
+&lt;p&gt;The validators needs to communicate to builders and relays the address they wish to use as the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;feeRecipient&lt;/code&gt;. This address is necessary to accurately measure the value of the proposed payload. Since &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;feeRecipient&lt;/code&gt; can be any address, the validator must authenticate themselves when publishing it.&lt;/p&gt;
+
+&lt;p&gt;There does not currently exist a way for validators to authenticate and publish their &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;feeRecipient&lt;/code&gt;. The best way to do this would likely be to add a signing domain which allows validators to safely sign arbitrary messages with their staking key.&lt;/p&gt;
+
+&lt;h3 id=&quot;partial-blocks-vs-full-blocks&quot;&gt;&lt;a href=&quot;https://ethresear.ch/t/mev-boost-merge-ready-flashbots-architecture/11177#partial-blocks-vs-full-blocks-11&quot;&gt;&lt;/a&gt;partial blocks vs full blocks&lt;/h3&gt;
+
+&lt;p&gt;This specification deprecates the use of “Flashbots Bundles” in the communication between builders and block proposers in favor of execution payloads which represent the full ordering and content of a block. While bundles have provided an efficient auction mechanism for inclusion of transaction at the top of blocks, they are not expressive enough for all order preference. In particular, bundle auctions are not well suited for large transactions or frontrunning protection use cases. Moving to full block proposals means the full range of preference on ordering can be expressed.&lt;/p&gt;
+
+&lt;h3 id=&quot;out-of-band-bribes-for-priority-and-mev-smoothing--burning&quot;&gt;&lt;a href=&quot;https://ethresear.ch/t/mev-boost-merge-ready-flashbots-architecture/11177#out-of-band-bribes-for-priority-and-mev-smoothing-burning-12&quot;&gt;&lt;/a&gt;out of band bribes for priority and MEV smoothing / burning&lt;/h3&gt;
+
+&lt;p&gt;It is possible some validators will accept out of band bribes to prioritize certain payloads or attempt to perform time bandit attacks through attestation bribery. It is not possible to protect against this behavior without consensus modifications. In theory, consensus could enforce that the block builder which pays the most to the block proposer in ETH must be included and that the payment is spread or burned, though the mechanism is out of scope of this proposal requires further research.&lt;/p&gt;
+
+&lt;h3 id=&quot;decentralization&quot;&gt;&lt;a href=&quot;https://ethresear.ch/t/mev-boost-merge-ready-flashbots-architecture/11177#decentralization-13&quot;&gt;&lt;/a&gt;decentralization&lt;/h3&gt;
+
+&lt;p&gt;As mentioned in the architecture section above, relays are trusted providers of frontrunning and DoS protection. While the system enables having multiple relays competing with eachother permissionlessly, it is possible there will only be a handful of successful relays. We suggest a &lt;a href=&quot;https://ethresear.ch/t/proposer-block-builder-separation-friendly-fee-market-designs/9725&quot;&gt;permissionless design 15&lt;/a&gt; be strongly considered by core devs for the cleanup fork in order to eliminate the need for relays which should improve network decentralization.&lt;/p&gt;
+
+&lt;h3 id=&quot;client-optimizations&quot;&gt;&lt;a href=&quot;https://ethresear.ch/t/mev-boost-merge-ready-flashbots-architecture/11177#client-optimizations-14&quot;&gt;&lt;/a&gt;client optimizations&lt;/h3&gt;
+
+&lt;p&gt;Although not recommended, a validator who is relying exclusively on third party block builders for block construction may run a stripped down version of an execution client which removes the transaction pool and the block construction logic thus reducing the hardware and bandwidth requirement of their client.&lt;/p&gt;</content><author><name></name></author><category term="ethereum" /><category term="blockchain" /><category term="distributed computing" /><category term="dao" /><category term="governance" /><summary type="html">MEV-Boost: Merge ready Flashbots Architecture</summary></entry><entry><title type="html">Hello, world!</title><link href="/primitives/2020/07/25/hello,-world!.html" rel="alternate" type="text/html" title="Hello, world!" /><published>2020-07-25T00:00:00+00:00</published><updated>2020-07-25T00:00:00+00:00</updated><id>/primitives/2020/07/25/hello,-world!</id><content type="html" xml:base="/primitives/2020/07/25/hello,-world!.html">&lt;p&gt;The post in website based on Jekyll is typically written with Markdown, which is just a lightweight markup language with plain text formatting syntax. This makes it very easy to create and publish posts.&lt;/p&gt;
 
 &lt;h2 id=&quot;create-a-post&quot;&gt;Create a Post&lt;/h2&gt;
 
