@@ -1,4 +1,10 @@
 [{
+            "title"    : "Account Abstraction via Alt. Mempool",
+            "subtitle" : "Proposal for account abstraction via alternative mempool",
+            "tags"     : "ethereum, blockchain, eip, account abstraction, proposal",
+            "url"      : "/primitives/2021/11/18/Account_Abstraction_Proposal.html",
+            "date"     : "2021-11-18 19:04:27 +0000"
+        },{
             "title"    : "harm reduction for miners",
             "subtitle" : "examination of miners as an at-risk population (internal and external factors), ideas for applying harm reduction to reduce potential losses and navigating the opaque waters of Maximal Extracted Value",
             "tags"     : "ethereum, blockchain, distributed computing, mev, flashbots",
