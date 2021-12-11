@@ -11,10 +11,9 @@ sidebar: true
 sidebar_avatar: /assets/img/avatar.jpeg
 sidebar_about_description: 0xJanitor
 
-RSS:                true
-email:              sam@manifoldfinance.com
-github_username:    sambacha
-
+RSS: true
+email: sam@manifoldfinance.com
+github_username: sambacha
 
 # Google Analytics settings (https://analytics.google.com/)
 ga_measurement_id:

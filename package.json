@@ -2,10 +2,13 @@
   "name": "@primitives/blog",
   "version": "0.0.0",
   "description": "ethereum and engineering blog",
-  "files": ["*"],
+  "files": [
+    "*"
+  ],
   "scripts": {
     "compile": "bundle exec jekyll build",
-    "deploy": "npx gh-pages -d _site/"
+    "deploy": "npx gh-pages -d _site/",
+    "fmt": "npx prettier --config .prettierrc.json --write '**/*.md'"
   },
   "repository": {
     "type": "git",
@@ -28,13 +31,19 @@
     "lighthouse": "^6.4.1",
     "mini-css-extract-plugin": "^1.2.1",
     "node-sass": "^4.7.2",
-    "prettier": "^2.1.2",
+    "prettier": "^2.5.1",
     "sass": "^1.29.0",
     "sass-loader": "^10.0.5",
     "webpack": "^5.6.0",
     "webpack-cli": "^4.2.0"
   },
-  "keywords": ["ethereum", "blog", "roguelike", "writing", "eth"],
+  "keywords": [
+    "ethereum",
+    "blog",
+    "roguelike",
+    "writing",
+    "eth"
+  ],
   "dependencies": {
     "postcss-cli": "^9.1.0"
   }

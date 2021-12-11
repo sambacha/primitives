@@ -8,12 +8,12 @@ multilingual: true
 
 <!-- English Version -->
 <div class="en post-container">
-    {% capture en %}{% include_relative about/en.md %}{% endcapture %}
-    {{ en | markdownify }}
+  {% capture en %}{% include_relative about/en.md %}{% endcapture %} {{ en |
+  markdownify }}
 </div>
 
 <!-- Chinese Version -->
 <div class="zh post-container">
-    {% capture zh %}{% include_relative about/zh.md %}{% endcapture %}
-    {{ zh | markdownify }}
+  {% capture zh %}{% include_relative about/zh.md %}{% endcapture %} {{ zh |
+  markdownify }}
 </div>

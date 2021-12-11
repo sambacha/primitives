@@ -1,86 +1,127 @@
 <!-- Footer -->
 <footer>
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-                {%- include sns.html center=true -%}
-                <p class="copyright text-muted">
-                    {%- assign now_year = 'now' | date: '%Y' | plus: 0 -%}
-                    See <a href="https://github.com/sambacha"></a> @sambacha | &copy; {{ site.published_at }}{% if site.published_at < now_year %}-{{ now_year }}{% endif %} {{ site.owner }}
-                </p>
-            </div>
-        </div>
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        {%- include sns.html center=true -%}
+        <p class="copyright text-muted">
+          {%- assign now_year = 'now' | date: '%Y' | plus: 0 -%} See
+          <a href="https://github.com/sambacha"></a> @sambacha | &copy; {{
+          site.published_at }}{% if site.published_at < now_year %}-{{ now_year
+          }}{% endif %} {{ site.owner }}
+        </p>
+      </div>
     </div>
+  </div>
 </footer>
 
 <!-- jQuery -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+<script
+  src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"
+  integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg=="
+  crossorigin="anonymous"
+></script>
 
 <!-- Bootstrap JavaScript-->
 <!-- Currently, only navbar scroll-down effect at desktop still depends on this -->
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
+<script
+  src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"
+  integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd"
+  crossorigin="anonymous"
+></script>
 
 <!-- Simple Jekyll Search -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/simple-jekyll-search/1.7.12/simple-jekyll-search.min.js" integrity="sha512-APy7Ff/y4pdIHleqiTMcRZ8Wu6tjfqhJpgAcaCvTuFQPj/G+/A5u0uZi/DkfkuLQ6FeFmDJgh/zl0y3If/VUyA==" crossorigin="anonymous"></script>
+<script
+  src="https://cdnjs.cloudflare.com/ajax/libs/simple-jekyll-search/1.7.12/simple-jekyll-search.min.js"
+  integrity="sha512-APy7Ff/y4pdIHleqiTMcRZ8Wu6tjfqhJpgAcaCvTuFQPj/G+/A5u0uZi/DkfkuLQ6FeFmDJgh/zl0y3If/VUyA=="
+  crossorigin="anonymous"
+></script>
 
 <!-- MathJax https://github.com/mathjax/MathJax/issues/2220 -->
 <script>
-    MathJax = {
-        options: {
-            renderActions: {
-                /* add a new named action not to override the original 'find' action */
-                find_script_mathtex: [10, function (doc) {
-                    for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
-                        const display = !!node.type.match(/; *mode=display/);
-                        const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
-                        const text = document.createTextNode('');
-                        node.parentNode.replaceChild(text, node);
-                        math.start = { node: text, delim: '', n: 0 };
-                        math.end = { node: text, delim: '', n: 0 };
-                        doc.math.push(math);
-                    }
-                }, '']
+  MathJax = {
+    options: {
+      renderActions: {
+        /* add a new named action not to override the original 'find' action */
+        find_script_mathtex: [
+          10,
+          function (doc) {
+            for (const node of document.querySelectorAll(
+              'script[type^="math/tex"]',
+            )) {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(
+                node.textContent,
+                doc.inputJax[0],
+                display,
+              );
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = { node: text, delim: '', n: 0 };
+              math.end = { node: text, delim: '', n: 0 };
+              doc.math.push(math);
             }
-        }
-    };
+          },
+          '',
+        ],
+      },
+    },
+  };
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.0.5/es5/tex-chtml.js" integrity="sha512-WIPUeuVusAT6dUtN6xKArYCBEa76ltyvaz3ltvQd+dy7ISdGJv1Y3y7eDBEF986YfNtmZGLdAaEBSgeBb+8OSg==" crossorigin="anonymous"></script>
+<script
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.0.5/es5/tex-chtml.js"
+  integrity="sha512-WIPUeuVusAT6dUtN6xKArYCBEa76ltyvaz3ltvQd+dy7ISdGJv1Y3y7eDBEF986YfNtmZGLdAaEBSgeBb+8OSg=="
+  crossorigin="anonymous"
+></script>
 
 <!-- Async load function -->
 <script>
-    function async(u, c) {
-        var d = document,
-            t = 'script',
-            o = d.createElement(t),
-            s = d.getElementsByTagName(t)[0];
-        o.src = u;
-        if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
-        s.parentNode.insertBefore(o, s);
+  function async(u, c) {
+    var d = document,
+      t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (c) {
+      o.addEventListener(
+        'load',
+        function (e) {
+          c(null, e);
+        },
+        false,
+      );
     }
+    s.parentNode.insertBefore(o, s);
+  }
 </script>
 
 {%- if page.layout == 'post' -%}
 <!-- AnchorJS -->
 <script>
-    async("https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.2.2/anchor.min.js", function() {
-        anchors.options = {
-            visible: 'hover'
-        };
-    anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
-    });
+  async(
+    'https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.2.2/anchor.min.js',
+    function () {
+      anchors.options = {
+        visible: 'hover',
+      };
+      anchors
+        .add()
+        .remove('.intro-header h1')
+        .remove('.subheading')
+        .remove('.sidebar-container h5');
+    },
+  );
 </script>
-{%- endif -%}
-
-{%- if page.title == 'Archive' -%}
+{%- endif -%} {%- if page.title == 'Archive' -%}
 <!-- Tag Cloud -->
 <script src="{{ site.baseurl }}/assets/js/archive.js"></script>
 <script>
-    async("{{ site.baseurl }}/assets/js/tagcloud.js", function () {
-        $.fn.tagcloud.defaults = {
-            color: { start: '#bbbbee', end: '#2f93b4' },
-        };
-        $('#tag_cloud a').tagcloud();
-    });
+  async('{{ site.baseurl }}/assets/js/tagcloud.js', function () {
+    $.fn.tagcloud.defaults = {
+      color: { start: '#bbbbee', end: '#2f93b4' },
+    };
+    $('#tag_cloud a').tagcloud();
+  });
 </script>
 {%- endif -%}
 
@@ -90,9 +131,7 @@
 {%- if page.multilingual -%}
 <!-- Multilingual -->
 <script src="{{ site.baseurl }}/assets/js/multilingual.js"></script>
-{%- endif -%}
-
-{%- if page.layout == 'post' and page.no_catalog != false -%}
+{%- endif -%} {%- if page.layout == 'post' and page.no_catalog != false -%}
 <!-- Side Catalog -->
 <script src="{{ site.baseurl }}/assets/js/catalog.js"></script>
 {%- endif -%}

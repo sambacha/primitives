@@ -1,13 +1,13 @@
-const path = require("path");
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const path = require('path');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = {
   entry: {
-    theme: ["./assets/js/theme.js", "./_sass/theme.scss"],
+    theme: ['./assets/js/theme.js', './_sass/theme.scss'],
   },
   output: {
-    filename: "js/[name].min.js",
-    path: path.resolve(__dirname, "assets"),
+    filename: 'js/[name].min.js',
+    path: path.resolve(__dirname, 'assets'),
   },
   module: {
     rules: [
@@ -16,20 +16,20 @@ module.exports = {
         use: [
           MiniCssExtractPlugin.loader,
           {
-            loader: "css-loader",
+            loader: 'css-loader',
             options: {
               url: false,
             },
           },
-          "sass-loader",
+          'sass-loader',
         ],
       },
       {
         test: /\.js$/,
         use: {
-          loader: "babel-loader",
+          loader: 'babel-loader',
           options: {
-            presets: ["@babel/preset-env"],
+            presets: ['@babel/preset-env'],
           },
         },
       },
@@ -37,7 +37,7 @@ module.exports = {
   },
   plugins: [
     new MiniCssExtractPlugin({
-      filename: "css/[name].min.css",
+      filename: 'css/[name].min.css',
     }),
   ],
 };
