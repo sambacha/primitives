@@ -1,164 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="/primitives/feed.xml" rel="self" type="application/atom+xml" /><link href="/primitives/" rel="alternate" type="text/html" /><updated>2021-11-18T20:50:00+00:00</updated><id>/primitives/feed.xml</id><title type="html">Primitives</title><subtitle>Engineering Blog</subtitle><entry><title type="html">Account Abstraction via Alt. Mempool</title><link href="/primitives/2021/11/18/Account_Abstraction_Proposal.html" rel="alternate" type="text/html" title="Account Abstraction via Alt. Mempool" /><published>2021-11-18T19:04:27+00:00</published><updated>2021-11-18T19:04:27+00:00</updated><id>/primitives/2021/11/18/Account_Abstraction_Proposal</id><content type="html" xml:base="/primitives/2021/11/18/Account_Abstraction_Proposal.html">&lt;h1 id=&quot;proposal-for-account-abstraction-via-alternative-mempool&quot;&gt;Proposal for account abstraction via alternative mempool&lt;/h1&gt;
-
-&lt;p&gt;Account abstraction has for a long time been a goal in the Ethereum ecosystem. Account abstraction can allow users to send transactions from smart contract wallets (eg. social recovery wallets) just as easily as they can from regular externally-owned accounts (EOAs). Currently, this is difficult because only an EOA can initiate a transaction and pay for gas. Previous proposals (eg. EIP 86, EIP 2938) attempted to modify the rules to allow smart contracts to pay for gas, but required sophisticated rules to ensure that transactions that pass through the mempool actually are going to pay fees.&lt;/p&gt;
-
-&lt;p&gt;This proposal takes a different approach, inspired by (and implementable through) alternate mempools such as Flashbots. We create a separate mempool that contains not transactions, but packaged objects representing calls (which we call user operations). A miner that is compatible with this mempool would simply include one single transaction which packages and makes all of these calls. Implementing account abstraction inside an alternate mempool allows it to proceed in a low-risk way early on, and eventually it could be more closely enshrined into the protocol (or incorporated through a scheme such as proposer/block builder separation)&lt;/p&gt;
-
-&lt;p&gt;User operation format
-User operations are passed around the network as an SSZ object of the form:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&quot;language-solidity=&quot;&gt;class UserOperation(Container):
-    target: Address # bytes32
-    gas: uint64
-    calldata: bytes
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;calldata itself encodes a struct that contains the desired operation that the user wants to make, but the implementation of this is up to the individual smart contract wallet (eg. it could represent an instruction to make one call, or make multiple calls, or perform some key-changing operation in the wallet).&lt;/p&gt;
-
-&lt;p&gt;Wallet format template
-Smart contract wallets are expected to have code fitting the following template:&lt;/p&gt;
-
-&lt;div class=&quot;language-js highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;table class=&quot;rouge-table&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td class=&quot;rouge-gutter gl&quot;&gt;&lt;pre class=&quot;lineno&quot;&gt;1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-28
-29
-30
-31
-32
-33
-34
-35
-36
-37
-38
-39
-40
-41
-&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;rouge-code&quot;&gt;&lt;pre&gt;
-&lt;span class=&quot;nx&quot;&gt;CALLDATA_OFFSET&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;160&lt;/span&gt;
-&lt;span class=&quot;nx&quot;&gt;MAX_CHECK_GAS&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;200000&lt;/span&gt;
-&lt;span class=&quot;nx&quot;&gt;RESERVED_FEE_POS&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;
-&lt;span class=&quot;nx&quot;&gt;GASPRICE_POS&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;32&lt;/span&gt;
-&lt;span class=&quot;nx&quot;&gt;POST_CALL_GAS_POS&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;64&lt;/span&gt;
-
-&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;msg&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;sender&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;MULTI_SENDER_ADDRESS&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;nx&quot;&gt;mstore&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;CALLDATA_OFFSET&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;32&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;gas&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt;
-    &lt;span class=&quot;nx&quot;&gt;calldatacopy&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;CALLDATA_OFFSET&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;calldatasize&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt;
-    &lt;span class=&quot;err&quot;&gt;#&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;call&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;to&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;check&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;nonce&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;and&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;signature&lt;/span&gt;
-    &lt;span class=&quot;err&quot;&gt;#&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;call&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;output&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;expected&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;to&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;be&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
-    &lt;span class=&quot;err&quot;&gt;#&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;reserved_fee&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;gasprice&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;post_call_gas&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-    &lt;span class=&quot;nx&quot;&gt;require&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;staticcall&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-        &lt;span class=&quot;nx&quot;&gt;address&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(),&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;MAX_CHECK_GAS&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-        &lt;span class=&quot;nx&quot;&gt;CALLDATA_OFFSET&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;32&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;calldatasize&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;32&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-        &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;CALLDATA_OFFSET&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
-    &lt;span class=&quot;err&quot;&gt;#&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Send&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;reserved&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;fee&lt;/span&gt;
-    &lt;span class=&quot;nx&quot;&gt;call&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;FEE_RESERVER_ADDRESS&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;mload&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;RESERVED_FEE_POS&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
-    &lt;span class=&quot;err&quot;&gt;#&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;call&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;to&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;main&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;call&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;and&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;increment&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;the&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;nonce&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-    &lt;span class=&quot;nx&quot;&gt;mstore&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;CALLDATA_OFFSET&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;32&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;nx&quot;&gt;call&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-        &lt;span class=&quot;nx&quot;&gt;address&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(),&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;gas&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;mload&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;POST_CALL_GAS_POS&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-        &lt;span class=&quot;nx&quot;&gt;CALLDATA_OFFSET&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;32&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;calldatasize&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;32&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-        &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;CALLDATA_OFFSET&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;err&quot;&gt;#&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Ask&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;refund&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;non&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;refunded&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;gas&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;fee&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;gets&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;sent&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;to&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;parent&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;sender&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;nx&quot;&gt;call&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;FEE_RESERVER_ADDRESS&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;GASPRICE_POS&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;32&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;msg&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;sender&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;address&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;err&quot;&gt;#&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Accept&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;ETH&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;and&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;nothing&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;calldataload&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;err&quot;&gt;#&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;The&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;first&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;calldata&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;of&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;call&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;flags&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;whether&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;we&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;re doing signature-checking or performing an action
-    ...
-}
-else {
-    ...
-}
-&lt;/span&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;This is a template that nodes in the network could check against; they would only accept a UserOperation whose target has code that satisfies this template. Additionally, they would require that the if (calldataload(0) != -1) clause in the code must pass a purity check, with the exception that local SLOADs are allowed.&lt;/p&gt;
-
-&lt;p&gt;The template ensures the following properties:&lt;/p&gt;
-
-&lt;p&gt;Only a user operation that passes through the wallet can take funds out of the wallet
-Only a user operation that passes through the wallet can cause other user operations to no longer be able to process
-Nodes in the network can halt execution right after the staticcall and check memory to see what the reserved fee and gasprice is, and make sure those values are acceptable
-These properties are sufficient to make it safe for network nodes to propagate user operations the pass a check of executing past the staticcall and stopping there, and for miners to accept such user operations.&lt;/p&gt;
-
-&lt;p&gt;Network node and miner logic
-Network nodes would listen for UserOperation objects on a dedicated subnet. They would verify a UserOperation by running it locally as a call, from their address, until the execution passes the staticcall stage. At that point, they would take the reserved_fee and compute implied_gasprice = reserved_fee / (user_operation.gas + 16 * calldatasize() + 2500), and check that gasprice &amp;lt;= implied_gasprice. They would check:&lt;/p&gt;
-
-&lt;p&gt;That the staticcall passes
-That the implied_gasprice - basefee is an acceptably high premium
-That post_call_gas is sufficient to do the post-call fee refunding
-If all checks pass, then as a network node they would propagate the UserOperation and as a miner they would consider it for inclusion.&lt;/p&gt;
-
-&lt;p&gt;When a new block appears, only UserOperations whose target were the target of any UserOperation would need to be re-checked (so a theoretical maximum of gas_limit / 5000 accounts).&lt;/p&gt;
-
-&lt;p&gt;When a miner packages a block, they would set the first transaction to be a transaction to the MULTI_SENDER_ADDRESS, a specialized contract. They would pass as calldata all the UserOperations, which the MULTI_SENDER_ADDRESS would then process. At the end, the MULTI_SENDER_ADDRESS would claim all fees and pass them along to the miner. Alternatively, bundle proposers in protocols such as Flashbots could produce such a transaction, allowing any Flashbots-compatible miner to include it in their block.&lt;/p&gt;
-
-&lt;h2 id=&quot;account-abstraction-designs&quot;&gt;Account abstraction designs&lt;/h2&gt;
-
-&lt;p&gt;These account abstraction designs attempt to optimize for the following goals:&lt;/p&gt;
-
-&lt;p&gt;Easy to determine if a transaction will pay gas (can just eth_call, no EVM modifications required)
-Preserve existing mempool invariants, particuarly the rule that whether or not a given user operation will pay a fee if included depends only on the state of that account (and if desired on immutable libraries), not on other accounts. Since a maximum of 15m/5k = 3k accounts can be modified, this means that a maximum of 3k transactions need to have their validation reprocessed when a block appears
-Support real time contract creation (so you can send an op from a wallet contract that doesn’t have code published yet, as long as it has ETH for gas)
-Support sponsorship, where a contract pays for gas&lt;/p&gt;
-
-&lt;h4 id=&quot;proposal-1-user-contract-wallet-with-self-call&quot;&gt;Proposal 1: user contract wallet with self-call&lt;/h4&gt;
-
-&lt;p&gt;A user wallet is a contract, which is required to satisfy the following template (these checks are made off-chain by miners):&lt;/p&gt;
-
-&lt;p&gt;The wallet contains at least two functions, the checker and the main body (it can also contain other functions)
-The main body logic is:
-Pass the op into the checker as a static call
-If the checker responds without an error, set sstore(0, sload(0) + 1) and interpret the checker response as (prepayment, gasprice)
-Send prepayment + gasprice * msg.gas WETH to the refund handler (using WETH instead of ETH for gas efficiency; if the account doesn’t have WETH, auto-convert ETH)
-Make the underlying user op (if there is insufficient ETH, auto-convert WETH), providing msg.gas - POST_CALL_GAS gas
-Ask the refund handler to give a refund, depending on how much gas remains
-Exit
-The miner must check that the template is satisfied, and that the checker accesses only the storage of the wallet account itself (this is checked using code static analysis). To check a user operation, the miner calls the checker function, and verify that its response is acceptable (the gasprice is high enough, and the prepayment is high enough to cover gas used up until the fee transfer). If the wallet contract does not yet exist, then the user op object is required to contain the wallet contract code, and the prepayment must be higher; it’s the miner’s job to include a call creating the wallet contract right before the call to the wallet contract.&lt;/p&gt;
-
-&lt;p&gt;[Note: no sponsorship support yet]&lt;/p&gt;
-
-&lt;h4 id=&quot;proposal-2-singleton-mechanism&quot;&gt;Proposal 2: singleton mechanism&lt;/h4&gt;
-
-&lt;p&gt;Proposal 2 moves more of the logic into a central “singleton contract”. The miner must still code-check the check+pay function to verify that it does nothing other than (i) making a check that only touches the wallet’s own storage, and (ii) appropriately paying the refund handler, but it does not need to code-check everything else.&lt;/p&gt;
-
-&lt;p&gt;The execution flow is modified: first perform all the checks+payments, then execute all the ops. This ensures that no op can interfere with the success of a check+pay (if the miner is honest), because all the check+pay steps happen before the ops.&lt;/p&gt;
-
-&lt;p&gt;If the miner is not honest, then the worst that will happen is that the miner will not get paid. To ensure safety for users, wallet contracts should only allow the singleton to call check+pay and the main body.&lt;/p&gt;
-
-&lt;p&gt;To support contract creation, we can add a creation phase to the singleton before the verify+pay phase.&lt;/p&gt;
-
-&lt;p&gt;[Note: no sponsorship support yet]&lt;/p&gt;</content><author><name></name></author><category term="ethereum" /><category term="blockchain" /><category term="eip" /><category term="account abstraction" /><category term="proposal" /><summary type="html">Proposal for account abstraction via alternative mempool</summary></entry><entry><title type="html">harm reduction for miners</title><link href="/primitives/2021/11/15/Harm_Reduction_for_miners.html" rel="alternate" type="text/html" title="harm reduction for miners" /><published>2021-11-15T00:00:00+00:00</published><updated>2021-11-15T00:00:00+00:00</updated><id>/primitives/2021/11/15/Harm_Reduction_for_miners</id><content type="html" xml:base="/primitives/2021/11/15/Harm_Reduction_for_miners.html">&lt;script async=&quot;&quot; src=&quot;https://platform.twitter.com/widgets.js&quot; charset=&quot;utf-8&quot;&gt;&lt;/script&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="http://localhost:4000/primitives/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/primitives/" rel="alternate" type="text/html" /><updated>2021-12-11T07:49:33+00:00</updated><id>http://localhost:4000/primitives/feed.xml</id><title type="html">Primitives</title><subtitle>Engineering Blog</subtitle><entry><title type="html">harm reduction for miners</title><link href="http://localhost:4000/primitives/2021/11/15/Harm_Reduction_for_miners.html" rel="alternate" type="text/html" title="harm reduction for miners" /><published>2021-11-15T00:00:00+00:00</published><updated>2021-11-15T00:00:00+00:00</updated><id>http://localhost:4000/primitives/2021/11/15/Harm_Reduction_for_miners</id><content type="html" xml:base="http://localhost:4000/primitives/2021/11/15/Harm_Reduction_for_miners.html">&lt;script async=&quot;&quot; src=&quot;https://platform.twitter.com/widgets.js&quot; charset=&quot;utf-8&quot;&gt;&lt;/script&gt;
 
 &lt;h1 id=&quot;harm-reduction-for-miners&quot;&gt;Harm Reduction for Miners&lt;/h1&gt;
 
@@ -366,7 +206,7 @@ This is not to disparage Paradigm or the people who work within its confines. Th
 
 &lt;p&gt;We make no claim on any copyrighted material, all rights reserved of their respective owners.&lt;/p&gt;
 
-&lt;p&gt;CC-4.0-SA&lt;/p&gt;</content><author><name></name></author><category term="ethereum" /><category term="blockchain" /><category term="distributed computing" /><category term="mev" /><category term="flashbots" /><summary type="html"></summary></entry><entry><title type="html">Ethereum Forking Notes</title><link href="/primitives/2021/11/14/Ethereum-Forking-Notes.html" rel="alternate" type="text/html" title="Ethereum Forking Notes" /><published>2021-11-14T00:00:00+00:00</published><updated>2021-11-14T00:00:00+00:00</updated><id>/primitives/2021/11/14/Ethereum-Forking-Notes</id><content type="html" xml:base="/primitives/2021/11/14/Ethereum-Forking-Notes.html">&lt;h1 id=&quot;ethereum-forking-notes&quot;&gt;Ethereum Forking Notes&lt;/h1&gt;
+&lt;p&gt;CC-4.0-SA&lt;/p&gt;</content><author><name></name></author><category term="ethereum" /><category term="blockchain" /><category term="distributed computing" /><category term="mev" /><category term="flashbots" /><summary type="html"></summary></entry><entry><title type="html">Ethereum Forking Notes</title><link href="http://localhost:4000/primitives/2021/11/14/Ethereum-Forking-Notes.html" rel="alternate" type="text/html" title="Ethereum Forking Notes" /><published>2021-11-14T00:00:00+00:00</published><updated>2021-11-14T00:00:00+00:00</updated><id>http://localhost:4000/primitives/2021/11/14/Ethereum-Forking-Notes</id><content type="html" xml:base="http://localhost:4000/primitives/2021/11/14/Ethereum-Forking-Notes.html">&lt;h1 id=&quot;ethereum-forking-notes&quot;&gt;Ethereum Forking Notes&lt;/h1&gt;
 
 &lt;p&gt;Probability of a Fork Occuring
 \(P\left(f o r k \mid t_{B}=600\right)=1-e^{\frac{-t_{90} t h}{600}}\)&lt;/p&gt;
@@ -669,7 +509,7 @@ func (b *BlockGen) OffsetTime(seconds int64) {
       &lt;td&gt;13,773,000&lt;/td&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
-&lt;/table&gt;</content><author><name></name></author><category term="ethereum" /><category term="blockchain" /><category term="distributed computing" /><summary type="html">Ethereum Forking Notes</summary></entry><entry><title type="html">DAOsclerosis</title><link href="/primitives/2021/11/13/DAOSclarosis.html" rel="alternate" type="text/html" title="DAOsclerosis" /><published>2021-11-13T00:00:00+00:00</published><updated>2021-11-13T00:00:00+00:00</updated><id>/primitives/2021/11/13/DAOSclarosis</id><content type="html" xml:base="/primitives/2021/11/13/DAOSclarosis.html">&lt;h1 id=&quot;daosclarosis&quot;&gt;DAOsclarosis&lt;/h1&gt;
+&lt;/table&gt;</content><author><name></name></author><category term="ethereum" /><category term="blockchain" /><category term="distributed computing" /><summary type="html">Ethereum Forking Notes</summary></entry><entry><title type="html">DAOsclerosis</title><link href="http://localhost:4000/primitives/2021/11/13/DAOSclarosis.html" rel="alternate" type="text/html" title="DAOsclerosis" /><published>2021-11-13T00:00:00+00:00</published><updated>2021-11-13T00:00:00+00:00</updated><id>http://localhost:4000/primitives/2021/11/13/DAOSclarosis</id><content type="html" xml:base="http://localhost:4000/primitives/2021/11/13/DAOSclarosis.html">&lt;h1 id=&quot;daosclarosis&quot;&gt;DAOsclarosis&lt;/h1&gt;
 
 &lt;h3 id=&quot;on-the-persistence-of-faulty-models-in-governance&quot;&gt;on the persistence of faulty models in governance&lt;/h3&gt;
 
@@ -930,7 +770,7 @@ Definition: A condition A is said to be sufficient for a condition B, if (and on
   &lt;li&gt;
     &lt;p&gt;&lt;a href=&quot;https://capitalresearch.org/article/the-lefts-next-culture-war-part-2/&quot;&gt;The Left’s Next Culture War: Using Corporate Rating Indexes&lt;/a&gt;&lt;/p&gt;
   &lt;/li&gt;
-&lt;/ul&gt;</content><author><name></name></author><category term="ethereum" /><category term="blockchain" /><category term="distributed computing" /><category term="dao" /><category term="governance" /><summary type="html">DAOsclarosis</summary></entry><entry><title type="html">MEV Boost</title><link href="/primitives/2021/11/07/MEV_Boost.html" rel="alternate" type="text/html" title="MEV Boost" /><published>2021-11-07T19:04:27+00:00</published><updated>2021-11-07T19:04:27+00:00</updated><id>/primitives/2021/11/07/MEV_Boost</id><content type="html" xml:base="/primitives/2021/11/07/MEV_Boost.html">&lt;h1 id=&quot;mev-boost-merge-ready-flashbots-architecture&quot;&gt;MEV-Boost: Merge ready Flashbots Architecture&lt;/h1&gt;
+&lt;/ul&gt;</content><author><name></name></author><category term="ethereum" /><category term="blockchain" /><category term="distributed computing" /><category term="dao" /><category term="governance" /><summary type="html">DAOsclarosis</summary></entry><entry><title type="html">MEV Boost</title><link href="http://localhost:4000/primitives/2021/11/07/MEV_Boost.html" rel="alternate" type="text/html" title="MEV Boost" /><published>2021-11-07T19:04:27+00:00</published><updated>2021-11-07T19:04:27+00:00</updated><id>http://localhost:4000/primitives/2021/11/07/MEV_Boost</id><content type="html" xml:base="http://localhost:4000/primitives/2021/11/07/MEV_Boost.html">&lt;h1 id=&quot;mev-boost-merge-ready-flashbots-architecture&quot;&gt;MEV-Boost: Merge ready Flashbots Architecture&lt;/h1&gt;
 
 &lt;blockquote&gt;
   &lt;p&gt;&lt;a href=&quot;https://ethresear.ch/t/mev-boost-merge-ready-flashbots-architecture/11177&quot;&gt;source via ethresear.ch/t/mev-boost-merge-ready-flashbots-architecture/11177&lt;/a&gt;; The Merge - Ethereum Research&lt;/p&gt;
@@ -1087,7 +927,7 @@ Definition: A condition A is said to be sufficient for a condition B, if (and on
 
 &lt;h3 id=&quot;client-optimizations&quot;&gt;&lt;a href=&quot;https://ethresear.ch/t/mev-boost-merge-ready-flashbots-architecture/11177#client-optimizations-14&quot;&gt;&lt;/a&gt;client optimizations&lt;/h3&gt;
 
-&lt;p&gt;Although not recommended, a validator who is relying exclusively on third party block builders for block construction may run a stripped down version of an execution client which removes the transaction pool and the block construction logic thus reducing the hardware and bandwidth requirement of their client.&lt;/p&gt;</content><author><name></name></author><category term="ethereum" /><category term="blockchain" /><category term="distributed computing" /><category term="dao" /><category term="governance" /><summary type="html">MEV-Boost: Merge ready Flashbots Architecture</summary></entry><entry><title type="html">Hello, world!</title><link href="/primitives/2020/07/25/hello,-world!.html" rel="alternate" type="text/html" title="Hello, world!" /><published>2020-07-25T00:00:00+00:00</published><updated>2020-07-25T00:00:00+00:00</updated><id>/primitives/2020/07/25/hello,-world!</id><content type="html" xml:base="/primitives/2020/07/25/hello,-world!.html">&lt;p&gt;The post in website based on Jekyll is typically written with Markdown, which is just a lightweight markup language with plain text formatting syntax. This makes it very easy to create and publish posts.&lt;/p&gt;
+&lt;p&gt;Although not recommended, a validator who is relying exclusively on third party block builders for block construction may run a stripped down version of an execution client which removes the transaction pool and the block construction logic thus reducing the hardware and bandwidth requirement of their client.&lt;/p&gt;</content><author><name></name></author><category term="ethereum" /><category term="blockchain" /><category term="distributed computing" /><category term="dao" /><category term="governance" /><summary type="html">MEV-Boost: Merge ready Flashbots Architecture</summary></entry><entry><title type="html">Hello, world!</title><link href="http://localhost:4000/primitives/2020/07/25/hello,-world!.html" rel="alternate" type="text/html" title="Hello, world!" /><published>2020-07-25T00:00:00+00:00</published><updated>2020-07-25T00:00:00+00:00</updated><id>http://localhost:4000/primitives/2020/07/25/hello,-world!</id><content type="html" xml:base="http://localhost:4000/primitives/2020/07/25/hello,-world!.html">&lt;p&gt;The post in website based on Jekyll is typically written with Markdown, which is just a lightweight markup language with plain text formatting syntax. This makes it very easy to create and publish posts.&lt;/p&gt;
 
 &lt;h2 id=&quot;create-a-post&quot;&gt;Create a Post&lt;/h2&gt;
 
