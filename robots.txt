@@ -1,1 +1,1 @@
-Sitemap: /primitives/sitemap.xml
+Sitemap: http://localhost:4000/primitives/sitemap.xml
