@@ -1,4 +1,10 @@
 [{
+            "title"    : "Web3 Technical Debt Creep",
+            "subtitle" : "",
+            "tags"     : "",
+            "url"      : "/primitives/2021/12/20/Web3-Technical-Debt-Creep.html",
+            "date"     : "2021-12-20 00:00:00 +0000"
+        },{
             "title"    : "Gas Pricing Index",
             "subtitle" : "Ethereum Gas Pricing Reference Benchmark",
             "tags"     : "ethereum, blockchain, distributed computing, dao, governance",

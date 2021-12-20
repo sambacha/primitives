@@ -1,4 +1,582 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="http://localhost:4000/primitives/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/primitives/" rel="alternate" type="text/html" /><updated>2021-12-11T08:31:33+00:00</updated><id>http://localhost:4000/primitives/feed.xml</id><title type="html">Primitives</title><subtitle>Engineering Blog</subtitle><entry><title type="html">Gas Pricing Index</title><link href="http://localhost:4000/primitives/2021/12/10/Gas_Reporting.html" rel="alternate" type="text/html" title="Gas Pricing Index" /><published>2021-12-10T00:00:00+00:00</published><updated>2021-12-10T00:00:00+00:00</updated><id>http://localhost:4000/primitives/2021/12/10/Gas_Reporting</id><content type="html" xml:base="http://localhost:4000/primitives/2021/12/10/Gas_Reporting.html">&lt;h1 id=&quot;gas-price-reporting-index&quot;&gt;Gas Price Reporting Index&lt;/h1&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="/primitives/feed.xml" rel="self" type="application/atom+xml" /><link href="/primitives/" rel="alternate" type="text/html" /><updated>2021-12-20T20:06:01+00:00</updated><id>/primitives/feed.xml</id><title type="html">Primitives</title><subtitle>Engineering Blog</subtitle><entry><title type="html">Web3 Technical Debt Creep</title><link href="/primitives/2021/12/20/Web3-Technical-Debt-Creep.html" rel="alternate" type="text/html" title="Web3 Technical Debt Creep" /><published>2021-12-20T00:00:00+00:00</published><updated>2021-12-20T00:00:00+00:00</updated><id>/primitives/2021/12/20/Web3-Technical-Debt-Creep</id><content type="html" xml:base="/primitives/2021/12/20/Web3-Technical-Debt-Creep.html">&lt;h1 id=&quot;the-mythical-web3-developer-experience&quot;&gt;The Mythical Web3 Developer Experience&lt;/h1&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Engineering UX hurdles encountered in Web3&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;Note: This is a summary of internal GitHub tickets and discussions in the form of a blog post.&lt;/p&gt;
+
+&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
+
+&lt;p&gt;This ticket has been created with the sole purpose of discussing current issues discovered while trying to integrate our JSON RPC endpoint within SushiSwap and the different wallet providers. The idea is to have clear once and for all, what the limitations are, what we can do to overcome them and if we need to request guidance from the Sushi team.&lt;/p&gt;
+
+&lt;p&gt;To achieve that, I’ve taken the following approach as described below:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Describe how things currently work in terms of Sushi’s front-end implementation for all providers.&lt;/li&gt;
+  &lt;li&gt;Describe how the workflow works for MetaMask, what we had tried previously to overcome limitations and the remaining issues with this implementation.&lt;/li&gt;
+  &lt;li&gt;Describe how the workflow works for WalletConnect, what we had tried previously to overcome limitations and the remaining issues with this implementation.&lt;/li&gt;
+  &lt;li&gt;Conclusions&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Without further ado, let’s dive in.&lt;/p&gt;
+
+&lt;h2 id=&quot;what-is-the-base-implementation&quot;&gt;What is the base implementation&lt;/h2&gt;
+
+&lt;p&gt;In a perfect world, ideally in Sushi’s front-end, we would like to change the RPC endpoint definition and use ours, like this:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/82811/145994476-989245b2-058e-4bc8-bafc-3f7b3267524b.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Theoretically, by just changing the RPC provider for the networks we are interested in, all transactions should be routed to that defined RPC endpoint… but it’s not the case, as we all already know. So changing this value will only make the UI request generic information like the current block number and several batched calls.&lt;/p&gt;
+
+&lt;p&gt;The code that is responsible of doing that in Sushi’s is the implementation of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;NetworkConnector&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;MiniRpcProvider&lt;/code&gt;:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/82811/146026549-8d2af937-af5c-4f97-9a07-616f6903f32b.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Right now, in Sushi’s front-end, whenever a user decides to Swap a pair of Tokens, &lt;a href=&quot;https://github.com/sushiswap/sushiswap-interface/blob/canary/src/hooks/useSwapCallback.ts&quot;&gt;the current implementation can be located in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;useSwapCallback&lt;/code&gt;&lt;/a&gt;. That file, in general terms, is responsible for making such important action. So, for example, the code responsible for creating the transaction and broadcasting to the network can be seen in the screenshot below:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/82811/145996172-1f3946aa-014f-4455-849d-0d68b65f8805.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;As we can notice from the screenshot above, Sushi’s front-end obtains a reference to the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;library.getSigner()&lt;/code&gt;, which is a Wallet connector that refers back to a specific implementation (like MetaMask, WalletConnect, Portis, etc.), populates the transaction information retrieved from the UI, leaves to the specific implementation to fill remaining details and if everything goes well sends the transaction to the network.&lt;/p&gt;
+
+&lt;p&gt;In general, we can simplify the code to be something like:&lt;/p&gt;
+
+&lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;table class=&quot;rouge-table&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td class=&quot;rouge-gutter gl&quot;&gt;&lt;pre class=&quot;lineno&quot;&gt;1
+2
+3
+4
+5
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;rouge-code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;nx&quot;&gt;library&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;getSigner&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;sendTransaction&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;tx&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// Tx is populated with real information from the user&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;then&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// The hash is added to the UI that keeps polling for the TX&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// If something wrong happens, like the user cancelling the TX or any other kind of error, it's being handled here&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;And this is the common ground for all wallet providers. So let’s move now to specific implementations.&lt;/p&gt;
+
+&lt;h2 id=&quot;metamask&quot;&gt;MetaMask&lt;/h2&gt;
+
+&lt;h3 id=&quot;current-flow&quot;&gt;Current flow&lt;/h3&gt;
+
+&lt;p&gt;In the case of MetaMask, the flow is the following:&lt;/p&gt;
+
+&lt;p&gt;The user is connected with MetaMask:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/82811/145997849-a108199c-c6e1-41df-bd4a-52eeaec1f1cd.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;And wants to swap these tokens for a specific amount:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/82811/145998002-bd773f01-8411-446f-aa05-a50af6de584f.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;A new pop-up appears showcasing MetaMask’s modal for sending a Transaction:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/82811/145998229-6e103b67-7cbb-43b9-a8be-71a765039e9d.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;In there, the user is able, among other things, to &lt;strong&gt;edit the estimated gas fee&lt;/strong&gt; (if he wants to, it’s an entirely optional step):&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/82811/145998346-cbf834d5-f3fa-4f85-ad9f-38ff7583bd45.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;And once he is happy, he can proceed to send the transaction to the network by using MetaMask’s Infura default RPC endpoint for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;mainnet&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Known Facts for MetaMask&lt;/strong&gt;:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;We already know their default Ethereum &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;mainnet&lt;/code&gt; RPC provider uses their Infura connection.&lt;/li&gt;
+  &lt;li&gt;We also already know they don’t allow us to use their &lt;a href=&quot;https://docs.metamask.io/guide/rpc-api.html#other-rpc-methods&quot;&gt;RPC method &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;wallet_addEthereumChain&lt;/code&gt;&lt;/a&gt; if the network conflicts with one of their defined set of networks (i.e.: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;mainnet&lt;/code&gt;).&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;previous-solution-trick-metamask-checks-for-network-id&quot;&gt;Previous Solution: Trick MetaMask checks for Network Id&lt;/h3&gt;
+
+&lt;p&gt;In issue #880 we were researching a potential alternative solution to trick MetaMask to believe the network we were adding was not for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;mainnet&lt;/code&gt;, but a completely random one.&lt;/p&gt;
+
+&lt;p&gt;The flow was designed to incite the user to switch to our RPC endpoint by placing a prominent button and using a custom &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;InjectedConnector&lt;/code&gt; in charge of tricking MetaMask to believe we weren’t adding network for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;mainnet&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://github.com/manifoldfinance/backbone-platform/issues/880#issuecomment-945977093&quot;&gt;This was the original comment thread&lt;/a&gt; where I give a very detailed explanation on how it works, and below there are the key points and screenshots of that flow:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/82811/137774088-b9c336c1-576d-418f-8508-2e3320e34601.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;If it’s the first time the user is adding our network, it will try to add the network:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/82811/137774282-5a7041c4-c515-4901-8448-cef032db8204.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;And switch to it:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/82811/137774406-af492a01-c894-4081-83a6-53767cbbef75.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;As it turned out, Sushi didn’t want to add the Manifold button to switch/add our RPC network. Without that, there’s no point of using the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;InjectedConnector&lt;/code&gt; anymore as it was designed only for handling that particular case and &lt;strong&gt;nothing else&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;In this aspect, &lt;strong&gt;it’s better to suggest the user use our RPC endpoint via a pop-up or something more prominent&lt;/strong&gt; as adding manually a network that overrides &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;mainnet&lt;/code&gt; is possible (BUT ONLY IF THE USER DOES IT). We can see it in the screenshot below:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/82811/136415403-07edd59b-332d-4b35-9171-e7d244194375.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;alternative-solution-sign-the-tx-ourselves&quot;&gt;Alternative Solution: Sign the tx ourselves&lt;/h3&gt;
+
+&lt;p&gt;Back in August, we were adding support to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;manifold_sendTransaction&lt;/code&gt;, and we took inspiration from what ArcherDAO did on Sushi’s front-end. Their implementation can be summarized as:&lt;/p&gt;
+
+&lt;p&gt;1) The user needs to configure the front-end to use ArcherDAO explicitly.
+2) The swap UI changed accordingly to display extra information like giving the Miner tips.
+3) Whenever the user sends the TX to ArcherDAO relayer if using MetaMask or any other provider, it signs the tx manually and makes a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;post&lt;/code&gt; request to the endpoint.&lt;/p&gt;
+
+&lt;p&gt;We copied the same approach for our use case, removing extra superfluous information we didn’t need (back in August, we weren’t a compliant RPC endpoint, and that approach worked well).&lt;/p&gt;
+
+&lt;p&gt;Re-using that idea, we can use it for our RPC endpoint as well, as can be seen in the following screenshots:&lt;/p&gt;
+
+&lt;p&gt;We add in expert settings the option to use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;OpenMEV&lt;/code&gt; (it can be turned on by default):&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/82811/146009734-300f0555-a0f3-4c9e-b393-d4f14d8a2051.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The usual sign message UI appears:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/82811/146010260-86f5a632-5b7b-466e-afdc-f1749ae2613c.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The TX is relayed to Flashbots (although that one failed):&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/82811/146010435-aa06d943-c377-445a-b87a-37db0082f789.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The above screenshots are the actual workflow that &lt;a href=&quot;https://github.com/manifoldfinance/sushiswap-interface/commit/704ad80c63c20b622944939361947bd48ef261c5#diff-686eddb0e7f6457b55065661febd02eddda11d03b5350f62fd7dc13f275a08d0R297&quot;&gt;I implemented yesterday and refined today on this branch&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;There are a couple of downsides of this approach:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;The user signs a message, so the UI is shit as it only displays a string of text. We can improve the UI of what’s displayed on the user by using &lt;a href=&quot;https://docs.metamask.io/guide/signing-data.html#sign-typed-data-v4&quot;&gt;Sign Typed Data V4 spec&lt;/a&gt; that corresponds to &lt;a href=&quot;https://eips.ethereum.org/EIPS/eip-712&quot;&gt;EIP-712&lt;/a&gt;, but I know there are incompatibilities among different wallets implementations that we can’t ignore. I reckon this can be a secondary task to improve UX and not necessary for right now.&lt;/li&gt;
+  &lt;li&gt;But more importantly, we need to re-implement the whole UI to allow the user to specify particular fields like Priority, Gas Limit, Max Fee and so on that MetaMask, WalletConnect, and other wallet implementations gives us for free. &lt;strong&gt;Who’s going to be in charge of doing that? Would it be somebody from Sushi? There are certaint aspects we need to take into consideration.&lt;/strong&gt; Right now, the current implementation takes default values and doesn’t allow to customize anything at all.&lt;/li&gt;
+  &lt;li&gt;If we use WalletConnect to sign the message, in my tests that I conducted with Trust Wallet that implements the standard, it doesn’t work correctly, and it doesn’t return the signed data to the front-end (more on it’s associated section).&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;walletconnect&quot;&gt;WalletConnect&lt;/h2&gt;
+
+&lt;h3 id=&quot;current-flow-1&quot;&gt;Current flow&lt;/h3&gt;
+
+&lt;p&gt;After explaining everything related to MetaMask, let’s rewind back and take the current implementation that is being used right now on Sushi’s. As a user if I want to use WalletConnect, the flow is the following:&lt;/p&gt;
+
+&lt;p&gt;The user selects WalletConnect:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/82811/146016387-4722f0ce-ad46-4a52-bb18-e728144c025b.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;A QR code appears to be scanned:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/82811/146016783-7b3c2c55-2030-4c1f-b51c-6c432a57909d.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;And once everything is finished, the link is established between the Wallet and Sushi’s front-end.&lt;/p&gt;
+
+&lt;p&gt;Now the user is able to conduct regular swap operations like below:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/82811/145998002-bd773f01-8411-446f-aa05-a50af6de584f.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;And in the phone wallet the following UI appears:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/82811/146017656-09a28e56-f680-48e0-88f8-c523fefa15f6.jpg&quot; alt=&quot;photo_2021-12-14_15-30-59&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;And the user is able to configure certain aspects of the TX like on MetaMask:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/82811/146017767-17fbdd75-4775-4bf6-98c5-0d2d359547ca.jpg&quot; alt=&quot;photo_2021-12-14_15-31-58&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;In terms of the implementation, in Sushi’s there’s a definition to use the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;WalletConnectConnector&lt;/code&gt;:&lt;/p&gt;
+
+&lt;div class=&quot;language-typescript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;table class=&quot;rouge-table&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td class=&quot;rouge-gutter gl&quot;&gt;&lt;pre class=&quot;lineno&quot;&gt;1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;rouge-code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;rpc&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;ChainId&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;ETHEREUM&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]:&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;https://api.sushirelay.com/v1&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;ChainId&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;ROPSTEN&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]:&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;https://eth-ropsten.alchemyapi.io/v2/cidKix2Xr-snU3f6f6Zjq_rYdalKKHmW&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;// mainnet only&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;export&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;walletconnect&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;WalletConnectConnector&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt;
+  &lt;span class=&quot;na&quot;&gt;rpc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;RPC&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+  &lt;span class=&quot;na&quot;&gt;bridge&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;https://bridge.walletconnect.org&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+  &lt;span class=&quot;na&quot;&gt;qrcode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;supportedChainIds&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Once the link is established all RPC requests goes to our node… &lt;strong&gt;all of them except sending the TX&lt;/strong&gt;. Neither our &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;eth_sendRawTransaction&lt;/code&gt; or any other related rpc method is being called but despite that fact the tx is being relayed to the network and mined fine.&lt;/p&gt;
+
+&lt;p&gt;Below there’s an screenshot of my debugging session of yesterday that displays the configuration options and clearly we can see the WalletConnect object &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;wc&lt;/code&gt; is correctly populated with our endpoint:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/82811/146018598-53fdf886-7d8c-4c9d-94e5-4e46f8c04b47.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;After spending some time there are two potential scenarios that I’m considering and that I need more supporting evidence:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Trust Wallet is ignoring the RPC endpoint purposedly when using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;library.getSigner().sendTransaction()&lt;/code&gt; and is being sent using their preconfigured Infura / Alchemy or whatever account.&lt;/li&gt;
+  &lt;li&gt;Recently, couple of days ago, &lt;a href=&quot;https://github.com/WalletConnect/walletconnect-monorepo/issues/663&quot;&gt;it has been reported that &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;@walletconnect/ethereum-provider&lt;/code&gt; library&lt;/a&gt; (the one that under the surface Sushi is using) doesn’t correctly fill the information correctly for the RPC in certain circumstances.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;alternative-approach-sign-the-tx-ourselves&quot;&gt;Alternative Approach: Sign the tx ourselves&lt;/h3&gt;
+
+&lt;p&gt;If, instead we take the route of signing the TX ourselves by using the same approach I described for MetaMask:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/82811/145998002-bd773f01-8411-446f-aa05-a50af6de584f.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The following UI appears:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/82811/146021787-3a8f4333-695c-41d7-9349-eee449079161.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The algorithm for custom signing the Tx that I explained for MetaMask works in the following way:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/82811/146025356-409e1b5e-8627-44d8-83d4-f71c04a2e989.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Basically, we detect if the provider is MetaMask, if it is, we custom sign the whole tx:&lt;/p&gt;
+
+&lt;div class=&quot;language-typescript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;table class=&quot;rouge-table&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td class=&quot;rouge-gutter gl&quot;&gt;&lt;pre class=&quot;lineno&quot;&gt;1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;rouge-code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;nx&quot;&gt;library&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;provider&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;method&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;personal_sign&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;params&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;hexlify&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;tx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;getMessageToSign&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()),&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;account&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;then&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;signature&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;v&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;r&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;splitSignature&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;signature&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;// really crossing the streams here&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;// eslint-disable-next-line&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;// @ts-ignore&lt;/span&gt;
+        &lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;txWithSignature&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;tx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;_processSignature&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;v&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;arrayify&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;r&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;arrayify&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;signedTx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;hexlify&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;txWithSignature&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;serialize&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()),&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;fullTx&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Otherwise, we rely on library connector implementation:&lt;/p&gt;
+
+&lt;div class=&quot;language-typescript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;table class=&quot;rouge-table&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td class=&quot;rouge-gutter gl&quot;&gt;&lt;pre class=&quot;lineno&quot;&gt;1
+2
+3
+4
+5
+6
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;rouge-code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;nx&quot;&gt;library&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;getSigner&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;signTransaction&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;fullTx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;then&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;signedTx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;signedTx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;fullTx&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Turns out that if we use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;library.getSigner().signTransaction()&lt;/code&gt; the ethers implementation of WalletConnect is not implemented at all as we can see below:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/82811/146023402-9e5802b0-1d8c-4aa8-86ea-9fea2c97196f.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;If, by contrary, we force the code to use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;library.provider.request({ method: 'personal_sign', params: [hexlify(tx.getMessageToSign()), account] })&lt;/code&gt; line, the following happens UI appears:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/82811/146023969-70136612-129a-4027-91de-827286b2cae7.jpg&quot; alt=&quot;photo_2021-12-14_16-04-34&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Which is what we want… only that when we accept that button there’s no response back to Sushi’s UI (neither an error or a result, so we can’t react to that at all).&lt;/p&gt;
+
+&lt;p&gt;Caveats of this implementation:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Same as those described for MetaMask, we should prepare the UI to allow the user to tweak tx settings.&lt;/li&gt;
+  &lt;li&gt;Potentially research, understand, involve more parties and involve more parties to see what’s going on with the implementation of WalletConnect and why is behaving like that and prepare a fix (if necessary).&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;conclusions&quot;&gt;Conclusions&lt;/h2&gt;
+
+&lt;p&gt;As I described, this only touches MetaMask and WalletConnect, I can’t imagine if we need to support the other connectors. We can skip those for now, but even with that, we need to answer the questions I raised for the case of MetaMask and also those of WalletConnect if we are willing to support it at all.&lt;/p&gt;
+
+&lt;h2 id=&quot;intro&quot;&gt;Intro&lt;/h2&gt;
+
+&lt;p&gt;After spending more time yesterday reading more Sushi’s codebase, reading the code of WalletConnect and MetaMask, reading a couple of Github issues and conducting tests, I’ve solved some problems that I presented yesterday. This comment is an update of my newly acquired knowledge and the progress I have made since:&lt;/p&gt;
+
+&lt;h2 id=&quot;how-sushis-is-handling-connectors&quot;&gt;How Sushi’s is handling connectors&lt;/h2&gt;
+
+&lt;p&gt;First and foremost, Sushi’s is wrapping &lt;a href=&quot;https://github.com/NoahZinsmeister/web3-react (the library they use to handle connectivity to different Wallet providers)&quot;&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;web3-react&lt;/code&gt;&lt;/a&gt; connectors into an etherjs &lt;a href=&quot;https://docs.ethers.io/v5/api/providers/&quot;&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Provider&lt;/code&gt;&lt;/a&gt; interface. We can see that here:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/82811/146187134-5a99ecab-935f-48e2-88fa-ed1764d56f6b.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The function &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;getLibrary&lt;/code&gt; is called way at the beginning of the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;React App&lt;/code&gt; as we can see below:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/82811/146187323-cc6c97bf-3226-4b1d-bc3c-6d05b8410b60.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Now, if we take a look into the implementation of ethersjs &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Web3Provider&lt;/code&gt;:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/82811/146187577-67ffd79e-ecd6-47cd-825d-77d94784be8b.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;We can see that it extends &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;JsonRpcProvider&lt;/code&gt;, and if we research the implementation, we discover the following:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/82811/146187870-c029c4e0-553e-4b09-831b-186a0e5dc50e.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;So, that explains why whenever we were using the method &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;library.getSigner().signTransaction()&lt;/code&gt; was throwing that error. Initially, I thought it was related to exclusively to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;WalletConnectConnector&lt;/code&gt; implementation.&lt;/p&gt;
+
+&lt;p&gt;This means, we need to use directly &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;library.provider&lt;/code&gt; implementation and use it directly without intermediaries.&lt;/p&gt;
+
+&lt;h2 id=&quot;the-issue-with-eth_sign-personal_sign-and-signedtypedata_v4&quot;&gt;The issue with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;eth_sign&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;personal_sign&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;signedTypeData_v4&lt;/code&gt;&lt;/h2&gt;
+
+&lt;p&gt;&lt;strong&gt;UPDATE&lt;/strong&gt;: We can’t use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;eth_signTypedData_v4&lt;/code&gt; as it adds the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;\x19Ethereum Signed Message:\n42a…&lt;/code&gt; prefix (as is stated here in &lt;a href=&quot;https://eips.ethereum.org/EIPS/eip-712#eth_signtypeddata&quot;&gt;EIP-712&lt;/a&gt;). So do &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;personal_sign&lt;/code&gt;. We need to rely on only &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;eth_sign&lt;/code&gt; directly. Also, for the part where I commented that TrustWallet was not answering initially, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;eth_sign&lt;/code&gt; was caused by my network connectivity issues with IPV6, which made me think that &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;eth_sign&lt;/code&gt; was being ignored. Consider what you read below as practically invalid.&lt;/p&gt;
+
+&lt;p&gt;In this particular issue opened in etherjs repository called &lt;a href=&quot;https://github.com/ethers-io/ethers.js/issues/1544&quot;&gt;Use personal_sign instead of eth_sign for JSON-RPC&lt;/a&gt;, there’s a discussion of the state of the art for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;eth_sign&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;personal_sign&lt;/code&gt; and related methods. This issue is particular useful as it explains why some wallets / implementations returns errors (like we were seeing with TrustWallet not answering &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;eth_sign&lt;/code&gt; request).&lt;/p&gt;
+
+&lt;p&gt;We can see what &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ricmoo&lt;/code&gt; &lt;a href=&quot;https://github.com/ethers-io/ethers.js/issues/1544#issue-877935690&quot;&gt;has said related to the situation&lt;/a&gt;:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/82811/146189613-fd8501e9-477a-4bf8-968e-8790ba5e3891.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;User &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;alfetopito&lt;/code&gt; &lt;a href=&quot;https://github.com/ethers-io/ethers.js/issues/1544#issuecomment-833878616&quot;&gt;adds the following&lt;/a&gt;:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/82811/146189791-8d5c1b8e-93f0-44f4-bb02-ad16f387e1f3.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;So the conclusion we need to extract is:&lt;/p&gt;
+
+&lt;p&gt;1) As a rule of thumb, always try to use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;personal_sign&lt;/code&gt; method first and resort to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;eth_sign&lt;/code&gt;
+2) &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;eth_signTypedData_v4&lt;/code&gt; can be used in these apps securely (just mentioning this but the initial version is not going to resort on this method by any means).&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/82811/146190697-67543d33-08df-442f-b086-1240dd1185ac.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;where-does-this-leave-us-right-now&quot;&gt;Where does this leave us right now?&lt;/h2&gt;
+
+&lt;p&gt;I updated the implementation of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;useSwapCallback&lt;/code&gt; to reflect these newly discovered insight:&lt;/p&gt;
+
+&lt;div class=&quot;language-typescript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;table class=&quot;rouge-table&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td class=&quot;rouge-gutter gl&quot;&gt;&lt;pre class=&quot;lineno&quot;&gt;1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;rouge-code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;kd&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;txResponse&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;Promise&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;TransactionResponseLight&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;useOpenMev&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+          &lt;span class=&quot;nx&quot;&gt;txResponse&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;library&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;getSigner&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;sendTransaction&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt;
+            &lt;span class=&quot;na&quot;&gt;from&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;account&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+            &lt;span class=&quot;na&quot;&gt;to&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;address&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+            &lt;span class=&quot;na&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;calldata&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+            &lt;span class=&quot;c1&quot;&gt;// let the wallet try if we can't estimate the gas&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;...(&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;gasEstimate&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;bestCallOption&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;gasLimit&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;calculateGasMargin&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;bestCallOption&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;gasEstimate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{}),&lt;/span&gt;
+            &lt;span class=&quot;na&quot;&gt;gasPrice&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;eip1559&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;chainId&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;===&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;ChainId&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;HARMONY&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;BigNumber&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;from&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;2000000000&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;undefined&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;...(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;isZero&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{}),&lt;/span&gt;
+          &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+          &lt;span class=&quot;nx&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;`Use OpenMEV`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;useOpenMev&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+          &lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;supportedNetwork&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;OPENMEV_SUPPORTED_NETWORKS&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;includes&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;chainId&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+          &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;supportedNetwork&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;throw&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;Error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;`Unknown chain id &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;chainId&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt; when building transaction`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+          &lt;span class=&quot;nx&quot;&gt;txResponse&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;library&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;getSigner&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;populateTransaction&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt;
+              &lt;span class=&quot;na&quot;&gt;from&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;account&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+              &lt;span class=&quot;na&quot;&gt;to&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;address&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+              &lt;span class=&quot;na&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;calldata&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+              &lt;span class=&quot;c1&quot;&gt;// let the wallet try if we can't estimate the gas&lt;/span&gt;
+              &lt;span class=&quot;p&quot;&gt;...(&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;gasEstimate&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;bestCallOption&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;gasLimit&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;calculateGasMargin&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;bestCallOption&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;gasEstimate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{}),&lt;/span&gt;
+              &lt;span class=&quot;p&quot;&gt;...(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;isZero&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{}),&lt;/span&gt;
+              &lt;span class=&quot;p&quot;&gt;...(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;eip1559&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;gasPrice&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{}),&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;then&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;txReq&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+              &lt;span class=&quot;nx&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;`EIP1559`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;eip1559&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+              &lt;span class=&quot;nx&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;`FullTX`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;txReq&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+              &lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;tx&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;TransactionFactory&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;fromTxData&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+                &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+                  &lt;span class=&quot;na&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;txReq&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;kd&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;hexlify&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;txReq&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;kd&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;undefined&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                  &lt;span class=&quot;na&quot;&gt;chainId&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;txReq&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;chainId&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;hexlify&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;txReq&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;chainId&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;undefined&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                  &lt;span class=&quot;na&quot;&gt;nonce&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;txReq&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;nonce&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;hexlify&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;txReq&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;nonce&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;hexPad&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;left&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;undefined&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                  &lt;span class=&quot;na&quot;&gt;gasPrice&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;txReq&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;gasPrice&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;hexlify&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;txReq&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;gasPrice&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;hexPad&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;left&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;undefined&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                  &lt;span class=&quot;na&quot;&gt;gasLimit&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;txReq&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;gasLimit&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;hexlify&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;txReq&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;gasLimit&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;hexPad&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;left&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;undefined&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                  &lt;span class=&quot;na&quot;&gt;maxFeePerGas&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;txReq&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;maxFeePerGas&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;hexlify&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;txReq&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;maxFeePerGas&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;hexPad&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;left&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;undefined&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                  &lt;span class=&quot;na&quot;&gt;maxPriorityFeePerGas&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;txReq&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;maxPriorityFeePerGas&lt;/span&gt;
+                    &lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;hexlify&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;txReq&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;maxPriorityFeePerGas&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;hexPad&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;left&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
+                    &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;undefined&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                  &lt;span class=&quot;na&quot;&gt;to&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;txReq&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;to&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                  &lt;span class=&quot;na&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;txReq&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;hexlify&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;txReq&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;hexPad&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;left&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;undefined&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                  &lt;span class=&quot;na&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;txReq&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;toString&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(),&lt;/span&gt;
+                &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;
+                &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+                  &lt;span class=&quot;na&quot;&gt;common&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Common&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt;
+                    &lt;span class=&quot;na&quot;&gt;chain&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;chainId&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                    &lt;span class=&quot;na&quot;&gt;hardfork&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;berlin&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                    &lt;span class=&quot;na&quot;&gt;eips&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;eip1559&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1559&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[],&lt;/span&gt;
+                  &lt;span class=&quot;p&quot;&gt;}),&lt;/span&gt;
+                &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+              &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+              &lt;span class=&quot;nx&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;`TX`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;tx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;toJSON&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt;
+
+              &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;library&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;provider&lt;/span&gt;
+                &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;method&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;personal_sign&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;params&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;hexlify&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;tx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;getMessageToSign&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()),&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;account&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
+                &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;then&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;signature&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+                  &lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;v&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;r&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;splitSignature&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;signature&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+                  &lt;span class=&quot;c1&quot;&gt;// really crossing the streams here&lt;/span&gt;
+                  &lt;span class=&quot;c1&quot;&gt;// eslint-disable-next-line&lt;/span&gt;
+                  &lt;span class=&quot;c1&quot;&gt;// @ts-ignore&lt;/span&gt;
+                  &lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;txWithSignature&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;tx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;_processSignature&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;v&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;arrayify&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;r&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;arrayify&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+                  &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;signedTx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;hexlify&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;txWithSignature&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;serialize&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()),&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;fullTx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;txReq&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+                &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;then&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(({&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;signedTx&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+              &lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;relayURI&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;chainId&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;OPENMEV_URI&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;chainId&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;undefined&lt;/span&gt;
+              &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;relayURI&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;throw&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;Error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;`Could not determine Sushi Relay URI for this network: &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;chainId&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+              &lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;body&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;JSON&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;stringify&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt;
+                &lt;span class=&quot;na&quot;&gt;jsonrpc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;2.0&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                &lt;span class=&quot;na&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;Date&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;getTime&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(),&lt;/span&gt;
+                &lt;span class=&quot;na&quot;&gt;method&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;eth_sendRawTransaction&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                &lt;span class=&quot;na&quot;&gt;params&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;signedTx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt;
+              &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
+
+              &lt;span class=&quot;nx&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;`Sending to URI: &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;relayURI&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+              &lt;span class=&quot;nx&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;`Body:`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;body&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+              &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;fetch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;relayURI&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+                &lt;span class=&quot;na&quot;&gt;method&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;POST&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                &lt;span class=&quot;nx&quot;&gt;body&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                &lt;span class=&quot;na&quot;&gt;headers&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+                  &lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;Content-Type&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;application/json&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;
+              &lt;span class=&quot;p&quot;&gt;}).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;then&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;res&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Response&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+                &lt;span class=&quot;c1&quot;&gt;// Handle success&lt;/span&gt;
+                &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;res&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;status&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;===&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;200&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+                  &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;res&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;json&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;then&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;json&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+                    &lt;span class=&quot;c1&quot;&gt;// But first check if there are some errors first and throw accordingly&lt;/span&gt;
+                    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;json&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;throw&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;Error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;json&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;message&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+                    &lt;span class=&quot;c1&quot;&gt;// Otherwise return a TransactionResponseLight object&lt;/span&gt;
+                    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;hash&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;json&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;result&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;TransactionResponseLight&lt;/span&gt;
+                  &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
+                &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+                &lt;span class=&quot;c1&quot;&gt;// Generic error&lt;/span&gt;
+                &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;res&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;status&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;200&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;throw&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;Error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;res&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;statusText&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+              &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This leaves the algorithm like:&lt;/p&gt;
+
+&lt;p&gt;1) If user does not have enabled OpenMEV, continue like previousy.
+2) If it does then:
+  1) Populate the transaction information by using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;library.getSigner().populateTransaction()&lt;/code&gt; method
+  2) Convert the resulting tx from &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ethersjs&lt;/code&gt; to raw by using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;TransactionFactory.fromTxData&lt;/code&gt; helper
+  3) Send the information to be signed by the wallet, right now using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;personal_sign&lt;/code&gt; but we should take into account failure and retry with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;eth_sign&lt;/code&gt;.
+  4) Send the TX to our RPC endpoint.
+3) Update UI accordingly.&lt;/p&gt;
+
+&lt;p&gt;So far I’ve been testing with:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Chrome MetaMask&lt;/li&gt;
+  &lt;li&gt;iOS MetaMask&lt;/li&gt;
+  &lt;li&gt;iOS TrustWallet&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;And all of them are able to sign and send the TX to the relay. There’s still some issues with Txs failing:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/82811/146192083-b2153c3e-27ed-40b1-9612-c96e3bbf1114.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;That I need to research why is happening whenever I have the basic flow tested and pushed to our repository.&lt;/p&gt;
+
+&lt;p&gt;Sushi is calculating TX gas price and other metrics by default, so as a first version where the user is not going to customize TX details like &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;GasPrice&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;MaxFeePerGas&lt;/code&gt; and so on can work. We need still, to coordinate with them how we can create a UI that takes that into account. But one step at a time.&lt;/p&gt;</content><author><name></name></author><summary type="html">The Mythical Web3 Developer Experience</summary></entry><entry><title type="html">Gas Pricing Index</title><link href="/primitives/2021/12/10/Gas_Reporting.html" rel="alternate" type="text/html" title="Gas Pricing Index" /><published>2021-12-10T00:00:00+00:00</published><updated>2021-12-10T00:00:00+00:00</updated><id>/primitives/2021/12/10/Gas_Reporting</id><content type="html" xml:base="/primitives/2021/12/10/Gas_Reporting.html">&lt;h1 id=&quot;gas-price-reporting-index&quot;&gt;Gas Price Reporting Index&lt;/h1&gt;
 
 &lt;blockquote&gt;
   &lt;p&gt;Collection of All Gas Price Prediction and Reporting Services and their various formats&lt;/p&gt;
@@ -1712,7 +2290,7 @@
   &lt;li&gt;https://www.etherchain.org/api/gasPriceOracle&lt;/li&gt;
   &lt;li&gt;https://gasprice.poa.network/&lt;/li&gt;
   &lt;li&gt;https://www.gasnow.org/api/v3/gas/price&lt;/li&gt;
-&lt;/ul&gt;</content><author><name></name></author><category term="ethereum" /><category term="blockchain" /><category term="distributed computing" /><category term="dao" /><category term="governance" /><summary type="html">Gas Price Reporting Index</summary></entry><entry><title type="html">harm reduction for miners</title><link href="http://localhost:4000/primitives/2021/11/15/Harm_Reduction_for_miners.html" rel="alternate" type="text/html" title="harm reduction for miners" /><published>2021-11-15T00:00:00+00:00</published><updated>2021-11-15T00:00:00+00:00</updated><id>http://localhost:4000/primitives/2021/11/15/Harm_Reduction_for_miners</id><content type="html" xml:base="http://localhost:4000/primitives/2021/11/15/Harm_Reduction_for_miners.html">&lt;script async=&quot;&quot; src=&quot;https://platform.twitter.com/widgets.js&quot; charset=&quot;utf-8&quot;&gt;&lt;/script&gt;
+&lt;/ul&gt;</content><author><name></name></author><category term="ethereum" /><category term="blockchain" /><category term="distributed computing" /><category term="dao" /><category term="governance" /><summary type="html">Gas Price Reporting Index</summary></entry><entry><title type="html">harm reduction for miners</title><link href="/primitives/2021/11/15/Harm_Reduction_for_miners.html" rel="alternate" type="text/html" title="harm reduction for miners" /><published>2021-11-15T00:00:00+00:00</published><updated>2021-11-15T00:00:00+00:00</updated><id>/primitives/2021/11/15/Harm_Reduction_for_miners</id><content type="html" xml:base="/primitives/2021/11/15/Harm_Reduction_for_miners.html">&lt;script async=&quot;&quot; src=&quot;https://platform.twitter.com/widgets.js&quot; charset=&quot;utf-8&quot;&gt;&lt;/script&gt;
 
 &lt;h1 id=&quot;harm-reduction-for-miners&quot;&gt;Harm Reduction for Miners&lt;/h1&gt;
 
@@ -1937,7 +2515,7 @@ knew?
 &lt;p&gt;We make no claim on any copyrighted material, all rights reserved of their
 respective owners.&lt;/p&gt;
 
-&lt;p&gt;CC-4.0-SA&lt;/p&gt;</content><author><name></name></author><category term="ethereum" /><category term="blockchain" /><category term="distributed computing" /><category term="mev" /><category term="flashbots" /><summary type="html"></summary></entry><entry><title type="html">Ethereum Forking Notes</title><link href="http://localhost:4000/primitives/2021/11/14/Ethereum-Forking-Notes.html" rel="alternate" type="text/html" title="Ethereum Forking Notes" /><published>2021-11-14T00:00:00+00:00</published><updated>2021-11-14T00:00:00+00:00</updated><id>http://localhost:4000/primitives/2021/11/14/Ethereum-Forking-Notes</id><content type="html" xml:base="http://localhost:4000/primitives/2021/11/14/Ethereum-Forking-Notes.html">&lt;h1 id=&quot;ethereum-forking-notes&quot;&gt;Ethereum Forking Notes&lt;/h1&gt;
+&lt;p&gt;CC-4.0-SA&lt;/p&gt;</content><author><name></name></author><category term="ethereum" /><category term="blockchain" /><category term="distributed computing" /><category term="mev" /><category term="flashbots" /><summary type="html"></summary></entry><entry><title type="html">Ethereum Forking Notes</title><link href="/primitives/2021/11/14/Ethereum-Forking-Notes.html" rel="alternate" type="text/html" title="Ethereum Forking Notes" /><published>2021-11-14T00:00:00+00:00</published><updated>2021-11-14T00:00:00+00:00</updated><id>/primitives/2021/11/14/Ethereum-Forking-Notes</id><content type="html" xml:base="/primitives/2021/11/14/Ethereum-Forking-Notes.html">&lt;h1 id=&quot;ethereum-forking-notes&quot;&gt;Ethereum Forking Notes&lt;/h1&gt;
 
 &lt;p&gt;Probability of a Fork Occuring&lt;/p&gt;
 
@@ -2300,7 +2878,7 @@ func (b *BlockGen) OffsetTime(seconds int64) {
       &lt;td&gt;13,773,000&lt;/td&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
-&lt;/table&gt;</content><author><name></name></author><category term="ethereum" /><category term="blockchain" /><category term="distributed computing" /><summary type="html">Ethereum Forking Notes</summary></entry><entry><title type="html">DAOsclerosis</title><link href="http://localhost:4000/primitives/2021/11/13/DAOSclarosis.html" rel="alternate" type="text/html" title="DAOsclerosis" /><published>2021-11-13T00:00:00+00:00</published><updated>2021-11-13T00:00:00+00:00</updated><id>http://localhost:4000/primitives/2021/11/13/DAOSclarosis</id><content type="html" xml:base="http://localhost:4000/primitives/2021/11/13/DAOSclarosis.html">&lt;h1 id=&quot;daosclarosis&quot;&gt;DAOsclarosis&lt;/h1&gt;
+&lt;/table&gt;</content><author><name></name></author><category term="ethereum" /><category term="blockchain" /><category term="distributed computing" /><summary type="html">Ethereum Forking Notes</summary></entry><entry><title type="html">DAOsclerosis</title><link href="/primitives/2021/11/13/DAOSclarosis.html" rel="alternate" type="text/html" title="DAOsclerosis" /><published>2021-11-13T00:00:00+00:00</published><updated>2021-11-13T00:00:00+00:00</updated><id>/primitives/2021/11/13/DAOSclarosis</id><content type="html" xml:base="/primitives/2021/11/13/DAOSclarosis.html">&lt;h1 id=&quot;daosclarosis&quot;&gt;DAOsclarosis&lt;/h1&gt;
 
 &lt;h3 id=&quot;on-the-persistence-of-faulty-models-in-governance&quot;&gt;on the persistence of faulty models in governance&lt;/h3&gt;
 
@@ -2667,7 +3245,7 @@ sufficient for a condition B, if (and only if) the truth (/existence
   &lt;li&gt;
     &lt;p&gt;&lt;a href=&quot;https://capitalresearch.org/article/the-lefts-next-culture-war-part-2/&quot;&gt;The Left’s Next Culture War: Using Corporate Rating Indexes&lt;/a&gt;&lt;/p&gt;
   &lt;/li&gt;
-&lt;/ul&gt;</content><author><name></name></author><category term="ethereum" /><category term="blockchain" /><category term="distributed computing" /><category term="dao" /><category term="governance" /><summary type="html">DAOsclarosis</summary></entry><entry><title type="html">MEV Boost</title><link href="http://localhost:4000/primitives/2021/11/07/MEV_Boost.html" rel="alternate" type="text/html" title="MEV Boost" /><published>2021-11-07T19:04:27+00:00</published><updated>2021-11-07T19:04:27+00:00</updated><id>http://localhost:4000/primitives/2021/11/07/MEV_Boost</id><content type="html" xml:base="http://localhost:4000/primitives/2021/11/07/MEV_Boost.html">&lt;h1 id=&quot;mev-boost-merge-ready-flashbots-architecture&quot;&gt;MEV-Boost: Merge ready Flashbots Architecture&lt;/h1&gt;
+&lt;/ul&gt;</content><author><name></name></author><category term="ethereum" /><category term="blockchain" /><category term="distributed computing" /><category term="dao" /><category term="governance" /><summary type="html">DAOsclarosis</summary></entry><entry><title type="html">MEV Boost</title><link href="/primitives/2021/11/07/MEV_Boost.html" rel="alternate" type="text/html" title="MEV Boost" /><published>2021-11-07T19:04:27+00:00</published><updated>2021-11-07T19:04:27+00:00</updated><id>/primitives/2021/11/07/MEV_Boost</id><content type="html" xml:base="/primitives/2021/11/07/MEV_Boost.html">&lt;h1 id=&quot;mev-boost-merge-ready-flashbots-architecture&quot;&gt;MEV-Boost: Merge ready Flashbots Architecture&lt;/h1&gt;
 
 &lt;blockquote&gt;
   &lt;p&gt;&lt;a href=&quot;https://ethresear.ch/t/mev-boost-merge-ready-flashbots-architecture/11177&quot;&gt;source via ethresear.ch/t/mev-boost-merge-ready-flashbots-architecture/11177&lt;/a&gt;;
@@ -2961,7 +3539,7 @@ the need for relays which should improve network decentralization.&lt;/p&gt;
 &lt;p&gt;Although not recommended, a validator who is relying exclusively on third party
 block builders for block construction may run a stripped down version of an
 execution client which removes the transaction pool and the block construction
-logic thus reducing the hardware and bandwidth requirement of their client.&lt;/p&gt;</content><author><name></name></author><category term="ethereum" /><category term="blockchain" /><category term="distributed computing" /><category term="dao" /><category term="governance" /><summary type="html">MEV-Boost: Merge ready Flashbots Architecture</summary></entry><entry><title type="html">Hello, world!</title><link href="http://localhost:4000/primitives/2020/07/25/hello,-world!.html" rel="alternate" type="text/html" title="Hello, world!" /><published>2020-07-25T00:00:00+00:00</published><updated>2020-07-25T00:00:00+00:00</updated><id>http://localhost:4000/primitives/2020/07/25/hello,-world!</id><content type="html" xml:base="http://localhost:4000/primitives/2020/07/25/hello,-world!.html">&lt;p&gt;The post in website based on Jekyll is typically written with Markdown, which is
+logic thus reducing the hardware and bandwidth requirement of their client.&lt;/p&gt;</content><author><name></name></author><category term="ethereum" /><category term="blockchain" /><category term="distributed computing" /><category term="dao" /><category term="governance" /><summary type="html">MEV-Boost: Merge ready Flashbots Architecture</summary></entry><entry><title type="html">Hello, world!</title><link href="/primitives/2020/07/25/hello,-world!.html" rel="alternate" type="text/html" title="Hello, world!" /><published>2020-07-25T00:00:00+00:00</published><updated>2020-07-25T00:00:00+00:00</updated><id>/primitives/2020/07/25/hello,-world!</id><content type="html" xml:base="/primitives/2020/07/25/hello,-world!.html">&lt;p&gt;The post in website based on Jekyll is typically written with Markdown, which is
 just a lightweight markup language with plain text formatting syntax. This makes
 it very easy to create and publish posts.&lt;/p&gt;
 
