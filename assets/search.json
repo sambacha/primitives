@@ -1,4 +1,10 @@
 [{
+            "title"    : "lvm-localpv - a good upgrade to local-path-provisioner",
+            "subtitle" : "lvm-localpv is a good upgrade to local-path-provisioner",
+            "tags"     : "gitops, devops, distributed computing, nix, tooling",
+            "url"      : "/primitives/2022/01/12/lvm-localpv.html",
+            "date"     : "2022-01-12 00:00:00 +0000"
+        },{
             "title"    : "Liquidity Adjusted Arrival Price",
             "subtitle" : "Benchmarking Trade Execution and Routing",
             "tags"     : "ethereum, blockchain, distributed computing, routing, amm, trading",

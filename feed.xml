@@ -1,4 +1,36 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="/primitives/feed.xml" rel="self" type="application/atom+xml" /><link href="/primitives/" rel="alternate" type="text/html" /><updated>2022-01-12T06:02:46+00:00</updated><id>/primitives/feed.xml</id><title type="html">Primitives</title><subtitle>Engineering Blog</subtitle><entry><title type="html">Liquidity Adjusted Arrival Price</title><link href="/primitives/2022/01/10/Liquidity-adjusted-arrival-price.html" rel="alternate" type="text/html" title="Liquidity Adjusted Arrival Price" /><published>2022-01-10T00:00:00+00:00</published><updated>2022-01-10T00:00:00+00:00</updated><id>/primitives/2022/01/10/Liquidity-adjusted-arrival-price</id><content type="html" xml:base="/primitives/2022/01/10/Liquidity-adjusted-arrival-price.html">&lt;h4 id=&quot;the-execution-quality-metric-every-crypto-trader-should-follow&quot;&gt;The execution quality metric every crypto trader should follow&lt;/h4&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="/primitives/feed.xml" rel="self" type="application/atom+xml" /><link href="/primitives/" rel="alternate" type="text/html" /><updated>2022-01-12T16:49:23+00:00</updated><id>/primitives/feed.xml</id><title type="html">Primitives</title><subtitle>Engineering Blog</subtitle><entry><title type="html">lvm-localpv - a good upgrade to local-path-provisioner</title><link href="/primitives/2022/01/12/lvm-localpv.html" rel="alternate" type="text/html" title="lvm-localpv - a good upgrade to local-path-provisioner" /><published>2022-01-12T00:00:00+00:00</published><updated>2022-01-12T00:00:00+00:00</updated><id>/primitives/2022/01/12/lvm-localpv</id><content type="html" xml:base="/primitives/2022/01/12/lvm-localpv.html">&lt;h1 id=&quot;lvm-localpv-is-a-good-upgrade-to-local-path-provisioner&quot;&gt;lvm-localpv is a good upgrade to local-path-provisioner&lt;/h1&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;A new tool that blends your everyday work apps into one. It’s the all-in-one workspace for you and your team&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;In the Kubernetes world, the Container Storage Interface (CSI) is an interface that is called whenever a Persistent Volume is created, updated or destroyed. There is an associated “driver” that is responsible for allocating the underlying volume and making it available to the related pod. Typically on AWS, the CSI driver would reserve an EBS volume and then attach/detach it to the right EC2 instance where the pod is running. Being on bare metal, we used for a while and then switched to . The rest of the article will be explaining the differences and our thinking a bit more.&lt;/p&gt;
+
+&lt;p&gt;local-path-provisioner CSI driver&lt;/p&gt;
+
+&lt;p&gt;We started with local-path-provisioner mainly because it ships with K3S. It’s a very simple driver that allocates a folder on the node where the pod gets allocated and mounts that folder into the pod. That’s it. It’s very simple and works on any Linux node that has enough disk space available.&lt;/p&gt;
+
+&lt;p&gt;We used it for a few months and then started hitting some limitations. Because of its design, it’s not able to report quota or disk usage. After all, it’s just a folder on a shared file system. We also hit which broke some of our deployments as is still kinda around these days. Another side factor is that we are using which recommends using XFS for performance and tuning reasons.&lt;/p&gt;
+
+&lt;p&gt;No volume usage reporting&lt;/p&gt;
+
+&lt;p&gt;Not relocatable between nodes&lt;/p&gt;
+
+&lt;p&gt;After a bit of searching, @Florian Klink found lvm-localpv. Logical Volume Manager (LVM) is a Linux partition management structure that sits on top of a disk. It’s another interface that is part of the Linux kernel that allows to allocate, resize and remove system volumes. All the drive has to do is to translate the CSI interface calls to Linux kernel calls.&lt;/p&gt;
+
+&lt;p&gt;It’s a tiny bit more difficult to install as it requires preparing the host with an LVM partition. We have allocated 40GB for the system partition, some swap, and then the rest formatted with LVM. In exchange, we can now allocate volumes with quotas, get volume usage metrics, and select which file system type to use on a per-volume basis. The most impressive part is that since last month when we installed it, it just works. We didn’t have to do any maintenance on this.&lt;/p&gt;
+
+&lt;p&gt;No maintenance, works out of the box.&lt;/p&gt;
+
+&lt;p&gt;Per volume file system type&lt;/p&gt;
+
+&lt;p&gt;Have to prepare the host with an LVM disk.&lt;/p&gt;
+
+&lt;p&gt;Not relocatable between nodes&lt;/p&gt;
+
+&lt;p&gt;Keen readers might notice that I didn’t talk about the volumes not being relocatable between machines. What this means is that, unlike EBS, if a node goes down, all the associated data is lost. It also means that the cluster is a bit less elastic since pods using volumes always get scheduled to the same node. To counter that, we replicate the data on the application level. Postgres and Redpanda are deployed in HA mode. If a node goes down, we can sleep through the night and repair the next day. This is enough for our current setup.&lt;/p&gt;
+
+&lt;p&gt;In the future, we might be looking at the umbrella OpenEBS project, which lvm-localpv belongs to. For now, it’s not worth the extra complexity.&lt;/p&gt;</content><author><name></name></author><category term="gitops" /><category term="devops" /><category term="distributed computing" /><category term="nix" /><category term="tooling" /><summary type="html">lvm-localpv is a good upgrade to local-path-provisioner</summary></entry><entry><title type="html">Liquidity Adjusted Arrival Price</title><link href="/primitives/2022/01/10/Liquidity-adjusted-arrival-price.html" rel="alternate" type="text/html" title="Liquidity Adjusted Arrival Price" /><published>2022-01-10T00:00:00+00:00</published><updated>2022-01-10T00:00:00+00:00</updated><id>/primitives/2022/01/10/Liquidity-adjusted-arrival-price</id><content type="html" xml:base="/primitives/2022/01/10/Liquidity-adjusted-arrival-price.html">&lt;h4 id=&quot;the-execution-quality-metric-every-crypto-trader-should-follow&quot;&gt;The execution quality metric every crypto trader should follow&lt;/h4&gt;
 
 &lt;p&gt;&lt;strong&gt;It’s hard to tell when you’re doing execution well; it’s easy to tell when you’re doing it poorly.&lt;/strong&gt;&lt;/p&gt;
 

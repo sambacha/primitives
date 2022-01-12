@@ -6,19 +6,19 @@
     name="viewport"
     content="width=device-width, initial-scale=1, viewport-fit=cover"
   /><!-- Begin Jekyll SEO tag v2.7.1 -->
-<title>About | Primitives</title>
+<title>lvm-localpv - a good upgrade to local-path-provisioner | Primitives</title>
 <meta name="generator" content="Jekyll v3.9.0" />
-<meta property="og:title" content="About" />
+<meta property="og:title" content="lvm-localpv - a good upgrade to local-path-provisioner" />
 <meta property="og:locale" content="en_US" />
-<meta name="description" content="Copyright 2021 - All Rights Reserved" />
-<meta property="og:description" content="Copyright 2021 - All Rights Reserved" />
+<meta name="description" content="lvm-localpv is a good upgrade to local-path-provisioner" />
+<meta property="og:description" content="lvm-localpv is a good upgrade to local-path-provisioner" />
 <meta property="og:site_name" content="Primitives" />
 <meta property="og:type" content="article" />
-<meta property="article:published_time" content="2022-01-12T16:49:23+00:00" />
+<meta property="article:published_time" content="2022-01-12T00:00:00+00:00" />
 <meta name="twitter:card" content="summary" />
-<meta property="twitter:title" content="About" />
+<meta property="twitter:title" content="lvm-localpv - a good upgrade to local-path-provisioner" />
 <script type="application/ld+json">
-{"headline":"About","dateModified":"2022-01-12T16:49:23+00:00","datePublished":"2022-01-12T16:49:23+00:00","url":"/primitives/about/","description":"Copyright 2021 - All Rights Reserved","@type":"WebSite","name":"Primitives","@context":"https://schema.org"}</script>
+{"headline":"lvm-localpv - a good upgrade to local-path-provisioner","dateModified":"2022-01-12T00:00:00+00:00","datePublished":"2022-01-12T00:00:00+00:00","mainEntityOfPage":{"@type":"WebPage","@id":"/primitives/2022/01/12/lvm-localpv.html"},"url":"/primitives/2022/01/12/lvm-localpv.html","description":"lvm-localpv is a good upgrade to local-path-provisioner","@type":"BlogPosting","@context":"https://schema.org"}</script>
 <!-- End Jekyll SEO tag -->
 <link type="application/atom+xml" rel="alternate" href="/primitives/feed.xml" title="Primitives" /><!-- Emoji Favicon  -->
   <!-- Favicon -->
@@ -49,7 +49,7 @@
 </head>
 <body><!-- Navigation -->
 <nav
-  class="navbar navbar-default navbar-custom navbar-fixed-top"
+  class="navbar navbar-default navbar-custom navbar-fixed-top invert"
 >
   <div class="container-fluid">
     <!-- Brand and toggle get grouped for better mobile display -->
@@ -102,59 +102,140 @@
     </div>
   </div>
 </div>
-<!-- Page Header -->
-<header
-  class="intro-header"
-  style="background-image: url('/primitives/assets/img/about.jpeg')"
+<!-- Post Header --><header
+  class="intro-header style-text"
 >
-  <div class="container">
+  <div class="header-mask"></div><div class="container">
     <div class="row">
       <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-        <div
-          class="site-heading"
-          
-        >
-          <h1>
-            About
-          </h1>
-          <span class="subheading"
-            >Engineering Blog</span
+        <div class="post-heading">
+          <div class="tags"><a
+              class="tag"
+              href="/primitives/archive/?tag=gitops"
+              title="gitops"
+              >gitops</a
+            ><a
+              class="tag"
+              href="/primitives/archive/?tag=devops"
+              title="devops"
+              >devops</a
+            ><a
+              class="tag"
+              href="/primitives/archive/?tag=distributed+computing"
+              title="distributed computing"
+              >distributed computing</a
+            ><a
+              class="tag"
+              href="/primitives/archive/?tag=nix"
+              title="nix"
+              >nix</a
+            ><a
+              class="tag"
+              href="/primitives/archive/?tag=tooling"
+              title="tooling"
+              >tooling</a
+            ></div>
+          <h1>lvm-localpv - a good upgrade to local-path-provisioner</h1>
+          <h2 class="subheading">lvm-localpv is a good upgrade to local-path-provisioner</h2>
+          <span class="meta"
+            >Posted by sambacha on January 12, 2022</span
           >
         </div>
       </div>
     </div>
   </div>
-</header><!-- Main Content -->
-<div class="container">
-  <div class="row"><!-- Postlist Container -->
-    <div
-      class="col-lg-8 col-lg-offset-1 col-md-8 col-md-offset-1 col-sm-12 col-xs-12 postlist-container"
-    ><!-- Language Selector -->
-<select
-  class="sel-lang"
-  onchange="setLang(this.options[this.options.selectedIndex].value)"
->
-  <option value="en">英文 | English</option>
-  <option value="zh">中文 | Chinese</option>
-</select>
-<!-- English Version -->
-<div class="en post-container">
-   <p>Copyright 2021 - All Rights Reserved</p>
+</header><!-- Post Content -->
+<style>
+  /* Place left on bigger screen */
+  @media all and (min-width: 800px) {
+    .anchorjs-link {
+      position: absolute;
+      left: -0.75em;
+      font-size: 1.1em;
+      margin-top: 0.1em;
+    }
+  }
+</style>
+<article>
+  <div class="container">
+    <div class="row">
+      <!-- Post Container -->
+      <div
+        class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 post-container"
+      ><h1 id="lvm-localpv-is-a-good-upgrade-to-local-path-provisioner">lvm-localpv is a good upgrade to local-path-provisioner</h1>
 
-</div>
+<blockquote>
+  <p>A new tool that blends your everyday work apps into one. It’s the all-in-one workspace for you and your team</p>
+</blockquote>
 
-<!-- Chinese Version -->
-<div class="zh post-container">
-   <p>Copyright 2021 - All Rights Reserved</p>
+<p>In the Kubernetes world, the Container Storage Interface (CSI) is an interface that is called whenever a Persistent Volume is created, updated or destroyed. There is an associated “driver” that is responsible for allocating the underlying volume and making it available to the related pod. Typically on AWS, the CSI driver would reserve an EBS volume and then attach/detach it to the right EC2 instance where the pod is running. Being on bare metal, we used for a while and then switched to . The rest of the article will be explaining the differences and our thinking a bit more.</p>
 
-</div>
+<p>local-path-provisioner CSI driver</p>
 
-    </div>
-    <!-- Sidebar Container -->
-    <div
-      class="col-lg-3 col-lg-offset-0 col-md-3 col-md-offset-0 col-sm-12 col-xs-12 sidebar-container"
-    ><!-- Featured Tags -->
-<section><h5>
+<p>We started with local-path-provisioner mainly because it ships with K3S. It’s a very simple driver that allocates a folder on the node where the pod gets allocated and mounts that folder into the pod. That’s it. It’s very simple and works on any Linux node that has enough disk space available.</p>
+
+<p>We used it for a few months and then started hitting some limitations. Because of its design, it’s not able to report quota or disk usage. After all, it’s just a folder on a shared file system. We also hit which broke some of our deployments as is still kinda around these days. Another side factor is that we are using which recommends using XFS for performance and tuning reasons.</p>
+
+<p>No volume usage reporting</p>
+
+<p>Not relocatable between nodes</p>
+
+<p>After a bit of searching, @Florian Klink found lvm-localpv. Logical Volume Manager (LVM) is a Linux partition management structure that sits on top of a disk. It’s another interface that is part of the Linux kernel that allows to allocate, resize and remove system volumes. All the drive has to do is to translate the CSI interface calls to Linux kernel calls.</p>
+
+<p>It’s a tiny bit more difficult to install as it requires preparing the host with an LVM partition. We have allocated 40GB for the system partition, some swap, and then the rest formatted with LVM. In exchange, we can now allocate volumes with quotas, get volume usage metrics, and select which file system type to use on a per-volume basis. The most impressive part is that since last month when we installed it, it just works. We didn’t have to do any maintenance on this.</p>
+
+<p>No maintenance, works out of the box.</p>
+
+<p>Per volume file system type</p>
+
+<p>Have to prepare the host with an LVM disk.</p>
+
+<p>Not relocatable between nodes</p>
+
+<p>Keen readers might notice that I didn’t talk about the volumes not being relocatable between machines. What this means is that, unlike EBS, if a node goes down, all the associated data is lost. It also means that the cluster is a bit less elastic since pods using volumes always get scheduled to the same node. To counter that, we replicate the data on the application level. Postgres and Redpanda are deployed in HA mode. If a node goes down, we can sleep through the night and repair the next day. This is enough for our current setup.</p>
+
+<p>In the future, we might be looking at the umbrella OpenEBS project, which lvm-localpv belongs to. For now, it’s not worth the extra complexity.</p>
+
+
+        <!-- Post Pager -->
+        <div>
+          <hr style="visibility: hidden" />
+          <ul class="pager"><li class="previous">
+              <a
+                href="/primitives/2022/01/10/Liquidity-adjusted-arrival-price.html"
+                data-toggle="tooltip"
+                data-placement="top"
+                title="Liquidity Adjusted Arrival Price"
+              >
+                Previous<br />
+                <span>Liquidity Adjusted Arrival Price</span>
+              </a>
+            </li></ul>
+          <hr style="visibility: hidden" />
+        </div><!-- Comments -->
+<script
+  src="https://utteranc.es/client.js"
+  repo="sambacha/comments"
+  issue-term="pathname"
+  theme="github-light"
+  crossorigin="anonymous"
+  async
+></script></div><!-- Side Catalog Container -->
+      <div
+        class="col-lg-2 col-lg-offset-0 visible-lg-block sidebar-container catalog-container"
+      >
+        <div class="side-catalog">
+          <hr class="hidden-sm hidden-xs" />
+          <h5>
+            <a class="catalog-toggle" href="#">CATALOG</a>
+          </h5>
+          <ul class="catalog-body"></ul>
+        </div>
+      </div><!-- Sidebar Container -->
+      <div
+        class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 sidebar-container"
+      ><!-- Featured Tags -->
+<section><hr class="hidden-sm hidden-xs"><h5>
         <a href="/primitives/archive/">FEATURED TAGS</a>
     </h5>
     <div class="tags"><a data-sort="0002"
@@ -205,41 +286,10 @@
             rel="1">trading</a>
     </div>
 </section>
-<!-- Short About -->
-<section class="visible-md visible-lg">
-  <hr />
-  <h5>
-    <a href="/primitives/about/">ABOUT ME</a>
-  </h5>
-  <div class="short-about"><img src="/primitives/assets/img/avatar.jpeg" /><p>0xJanitor</p><!-- SNS -->
-<ul class="list-inline">
-  
-  <li>
-    <a href="/primitives/feed.xml">
-      <span class="fa-stack fa-lg">
-        <i class="fas fa-circle fa-stack-2x"></i>
-        <i class="fas fa-rss fa-stack-1x fa-inverse"></i>
-      </span>
-    </a>
-  </li><li>
-    <a target="_blank" href="mailto:sam@manifoldfinance.com">
-      <span class="fa-stack fa-lg">
-        <i class="fas fa-circle fa-stack-2x"></i>
-        <i class="fas fa-envelope fa-stack-1x fa-inverse"></i>
-      </span>
-    </a>
-  </li><li>
-    <a target="_blank" href="https://github.com/sambacha">
-      <span class="fa-stack fa-lg">
-        <i class="fas fa-circle fa-stack-2x fa-inverse"></i>
-        <i class="fab fa-github fa-stack-2x"></i>
-      </span>
-    </a>
-  </li></ul>
 </div>
-</section>
-</div></div>
-</div>
+    </div>
+  </div>
+</article>
 <!-- Footer -->
 <footer>
   <div class="container">
@@ -355,7 +405,22 @@
     }
     s.parentNode.insertBefore(o, s);
   }
+</script><!-- AnchorJS -->
+<script>
+  async(
+    'https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.2.2/anchor.min.js',
+    function () {
+      anchors.options = {
+        visible: 'hover',
+      };
+      anchors
+        .add()
+        .remove('.intro-header h1')
+        .remove('.subheading')
+        .remove('.sidebar-container h5');
+    },
+  );
 </script><!-- Custom JavaScript -->
-<script src="/primitives/assets/js/main.js"></script><!-- Multilingual -->
-<script src="/primitives/assets/js/multilingual.js"></script></body>
+<script src="/primitives/assets/js/main.js"></script><!-- Side Catalog -->
+<script src="/primitives/assets/js/catalog.js"></script></body>
 </html>
