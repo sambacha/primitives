@@ -1,5 +1,17 @@
 [{
-            "title"    : "Web3 Technical Debt Creep",
+            "title"    : "Liquidity Adjusted Arrival Price",
+            "subtitle" : "Benchmarking Trade Execution and Routing",
+            "tags"     : "ethereum, blockchain, distributed computing, routing, amm, trading",
+            "url"      : "/primitives/2022/01/10/Liquidity-adjusted-arrival-price.html",
+            "date"     : "2022-01-10 00:00:00 +0000"
+        },{
+            "title"    : "Susshiswap_chef",
+            "subtitle" : "",
+            "tags"     : "analysis, sushiswap, protocol",
+            "url"      : "/primitives/2021/12/27/Susshiswap_Chef.html",
+            "date"     : "2021-12-27 00:00:00 +0000"
+        },{
+            "title"    : " The Mythical Web3 Developer Experience",
             "subtitle" : "",
             "tags"     : "",
             "url"      : "/primitives/2021/12/20/Web3-Technical-Debt-Creep.html",
@@ -10,34 +22,4 @@
             "tags"     : "ethereum, blockchain, distributed computing, dao, governance",
             "url"      : "/primitives/2021/12/10/Gas_Reporting.html",
             "date"     : "2021-12-10 00:00:00 +0000"
-        },{
-            "title"    : "harm reduction for miners",
-            "subtitle" : "examination of miners as an at-risk population (internal and external factors), ideas for applying harm reduction to reduce potential losses and navigating the opaque waters of Maximal Extracted Value",
-            "tags"     : "ethereum, blockchain, distributed computing, mev, flashbots",
-            "url"      : "/primitives/2021/11/15/Harm_Reduction_for_miners.html",
-            "date"     : "2021-11-15 00:00:00 +0000"
-        },{
-            "title"    : "Ethereum Forking Notes",
-            "subtitle" : "Notes on how different clients handle hardforks and softforks",
-            "tags"     : "ethereum, blockchain, distributed computing",
-            "url"      : "/primitives/2021/11/14/Ethereum-Forking-Notes.html",
-            "date"     : "2021-11-14 00:00:00 +0000"
-        },{
-            "title"    : "DAOsclerosis",
-            "subtitle" : "on the persistence of faulty models in governance",
-            "tags"     : "ethereum, blockchain, distributed computing, dao, governance",
-            "url"      : "/primitives/2021/11/13/DAOSclarosis.html",
-            "date"     : "2021-11-13 00:00:00 +0000"
-        },{
-            "title"    : "MEV Boost",
-            "subtitle" : "on the persistence of faulty models in governance",
-            "tags"     : "ethereum, blockchain, distributed computing, dao, governance",
-            "url"      : "/primitives/2021/11/07/MEV_Boost.html",
-            "date"     : "2021-11-07 19:04:27 +0000"
-        },{
-            "title"    : "Hello, world!",
-            "subtitle" : "Test example",
-            "tags"     : "Jekyll, Markdown",
-            "url"      : "/primitives/2020/07/25/hello,-world!.html",
-            "date"     : "2020-07-25 00:00:00 +0000"
         }]
