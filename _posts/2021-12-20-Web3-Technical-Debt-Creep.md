@@ -1,3 +1,7 @@
+---
+title: ' The Mythical Web3 Developer Experience'
+excerpt: ''
+---
 # The Mythical Web3 Developer Experience
 
 > Engineering UX hurdles encountered in Web3 
