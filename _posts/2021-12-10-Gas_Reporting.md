@@ -4,16 +4,16 @@ subtitle: Ethereum Gas Pricing Reference Benchmark
 tags: [ethereum, blockchain, distributed computing, dao, governance]
 ---
 
-
 # Gas Price Reporting Index
 
-> Collection of All Gas Price Prediction and Reporting Services and their various formats
- 
- [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5702504.svg)](https://doi.org/10.5281/zenodo.5702504)
+> Collection of All Gas Price Prediction and Reporting Services and their
+> various formats
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5702504.svg)](https://doi.org/10.5281/zenodo.5702504)
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/sambacha/gas-reporting)
 
  </span>
- 
+
 
  <details>
  <summary> Frontmatter </summary>
@@ -45,44 +45,42 @@ tags: [ethereum, blockchain, distributed computing, dao, governance]
  
 > Notice: GasNow as of 2021-10-01 will be shutting down due to SparkPools closure
 
- 
 ## [Gas Reporting Index - TOC](https://github.com/sambacha/gas-reporting/edit/master/README.md)
 
 - [Cite This Work](#cite-this-work)
 - [Fee Speed Definitions](#fee-speed-definitions)
 - [Gas Price Reporting Index](#gas-price-reporting-index)
-  * [Cite This Work](#cite-this-work)
-  * [Fee Speed Definitions](#fee-speed-definitions)
-    + [api.txprice.com](#apitxpricecom)
-    + [Blocknative](#blocknative)
+  - [Cite This Work](#cite-this-work)
+  - [Fee Speed Definitions](#fee-speed-definitions)
+    - [api.txprice.com](#apitxpricecom)
+    - [Blocknative](#blocknative)
       - [gas.blocknative.com](#gasblocknativecom)
       - [bnc-ext](#bnc-ext)
       - [BlockNative Chrome Extenstion](#blocknative-chrome-extenstion)
       - [sample response](#sample-response)
-    + [WalletConnect](#walletconnect)
+    - [WalletConnect](#walletconnect)
       - [specification](#specification)
       - [sample response](#sample-response-1)
-    + [Flashbots](#flashbots)
+    - [Flashbots](#flashbots)
       - [specification](#specification-1)
       - [request sample](#request-sample)
       - [response](#response)
-    + [EtherScan](#etherscan)
-    + [GasNow [no longer in service]](#gasnow--no-longer-in-service-)
+    - [EtherScan](#etherscan)
+    - [GasNow [no longer in service]](#gasnow--no-longer-in-service-)
       - [GasNow Legacy](#gasnow-legacy)
-    + [Gnosis](#gnosis)
-    + [MetaMask](#metamask)
+    - [Gnosis](#gnosis)
+    - [MetaMask](#metamask)
       - [Consensys CoDeFi](#consensys-codefi)
-    + [1inch](#1inch)
-    + [ethGasStation](#ethgasstation)
-    + [etherchain.org](#etherchainorg)
-    + [poanetwork](#poanetwork)
-    + [Zoltu](#zoltu)
-    + [MyCrypto](#mycrypto)
-    + [EtherScan](#etherscan-1)
-    + [Zapper](#zapper)
-    + [archerdao](#archerdao)
+    - [1inch](#1inch)
+    - [ethGasStation](#ethgasstation)
+    - [etherchain.org](#etherchainorg)
+    - [poanetwork](#poanetwork)
+    - [Zoltu](#zoltu)
+    - [MyCrypto](#mycrypto)
+    - [EtherScan](#etherscan-1)
+    - [Zapper](#zapper)
+    - [archerdao](#archerdao)
 - [URL Index](#url-index)
-
 
 ## Cite This Work
 
@@ -104,7 +102,6 @@ version = {1.1.5},
 year = {2021}
 }
 ```
-
 
 ## Fee Speed Definitions
 
@@ -169,12 +166,12 @@ year = {2021}
 
 ### Blocknative
 
-> @note there are two seperate entries 
+> @note there are two seperate entries
 
 #### gas.blocknative.com
 
 > Note: This is powered by Blocknative's global mempool data platform
- 
+
 ```jsonc
 {
   "system": "ethereum",
@@ -233,7 +230,7 @@ year = {2021}
 
 [https://blocknative-api.herokuapp.com/data](https://blocknative-api.herokuapp.com/data)
 
-#### sample response 
+#### sample response
 
 ```json
 {
@@ -241,40 +238,45 @@ year = {2021}
   "seconds": 17,
   "maxPrice": 768,
   "estimatedTransactions": 279,
-  "estimatedPrices": [{
-    "confidence": 99,
-    "price": 86,
-    "maxPriorityFeePerGas": 2.96,
-    "maxFeePerGas": 170.76
-  }, {
-    "confidence": 95,
-    "price": 85,
-    "maxPriorityFeePerGas": 1.75,
-    "maxFeePerGas": 169.55
-  }, {
-    "confidence": 90,
-    "price": 85,
-    "maxPriorityFeePerGas": 1.56,
-    "maxFeePerGas": 169.36
-  }, {
-    "confidence": 80,
-    "price": 85,
-    "maxPriorityFeePerGas": 1.48,
-    "maxFeePerGas": 169.28
-  }, {
-    "confidence": 70,
-    "price": 85,
-    "maxPriorityFeePerGas": 1.37,
-    "maxFeePerGas": 169.17
-  }],
+  "estimatedPrices": [
+    {
+      "confidence": 99,
+      "price": 86,
+      "maxPriorityFeePerGas": 2.96,
+      "maxFeePerGas": 170.76
+    },
+    {
+      "confidence": 95,
+      "price": 85,
+      "maxPriorityFeePerGas": 1.75,
+      "maxFeePerGas": 169.55
+    },
+    {
+      "confidence": 90,
+      "price": 85,
+      "maxPriorityFeePerGas": 1.56,
+      "maxFeePerGas": 169.36
+    },
+    {
+      "confidence": 80,
+      "price": 85,
+      "maxPriorityFeePerGas": 1.48,
+      "maxFeePerGas": 169.28
+    },
+    {
+      "confidence": 70,
+      "price": 85,
+      "maxPriorityFeePerGas": 1.37,
+      "maxFeePerGas": 169.17
+    }
+  ],
   "baseFeePerGas": 83.897778652
 }
 ```
 
-
 ### WalletConnect
 
-#### specification 
+#### specification
 
 [https://github.com/pedrouid/ethereum-api#api](https://github.com/pedrouid/ethereum-api#api)
 
@@ -284,7 +286,7 @@ year = {2021}
 http GET https://ethereum-api.xyz/gas-prices
 ```
 
-#### sample response 
+#### sample response
 
 ```json
 {
@@ -343,8 +345,8 @@ http GET https://ethereum-api.xyz/gas-prices
 }
 ```
 
-
 #### request sample
+
 ```sh
 curl -s -L -X POST 'https://protection.flashbots.net/v1/rpc' \
 -H 'Content-Type: application/json' \
@@ -355,35 +357,35 @@ curl -s -L -X POST 'https://protection.flashbots.net/v1/rpc' \
   "params": []
 }'
 ```
+
 #### response
 
 ```json
 {
-    "jsonrpc": "2.0",
-    "id": 1,
-    "result": {
-        "block": 13467179,
-        "baseFeePerGas": "0x0bd0606957",
-        "default": {
-            "maxFeePerGas": "0x12ec776ebc",
-            "maxPriorityFeePerGas": "0x01e47257df"
-        },
-        "low": {
-            "maxFeePerGas": "0x11d7682749",
-            "maxPriorityFeePerGas": "0xe45ecec3"
-        },
-        "med": {
-            "maxFeePerGas": "0x12ec776ebc",
-            "maxPriorityFeePerGas": "0x01e47257df"
-        },
-        "high": {
-            "maxFeePerGas": "0x1412552c31",
-            "maxPriorityFeePerGas": "0x0302bff9d4"
-        }
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "block": 13467179,
+    "baseFeePerGas": "0x0bd0606957",
+    "default": {
+      "maxFeePerGas": "0x12ec776ebc",
+      "maxPriorityFeePerGas": "0x01e47257df"
+    },
+    "low": {
+      "maxFeePerGas": "0x11d7682749",
+      "maxPriorityFeePerGas": "0xe45ecec3"
+    },
+    "med": {
+      "maxFeePerGas": "0x12ec776ebc",
+      "maxPriorityFeePerGas": "0x01e47257df"
+    },
+    "high": {
+      "maxFeePerGas": "0x1412552c31",
+      "maxPriorityFeePerGas": "0x0302bff9d4"
     }
+  }
 }
 ```
-
 
 ### EtherScan
 
@@ -636,23 +638,23 @@ Content-Type:text/plain
 
 ```json
 {
-    "baseFee": "93731028208",
-    "low": {
-        "maxPriorityFeePerGas": "1170000000",
-        "maxFeePerGas": "94901028208"
-    },
-    "medium": {
-        "maxPriorityFeePerGas": "2340000000",
-        "maxFeePerGas": "96071028208"
-    },
-    "high": {
-        "maxPriorityFeePerGas": "5850000000",
-        "maxFeePerGas": "99581028208"
-    },
-    "instant": {
-        "maxPriorityFeePerGas": "5850000000",
-        "maxFeePerGas": "129455336670"
-    }
+  "baseFee": "93731028208",
+  "low": {
+    "maxPriorityFeePerGas": "1170000000",
+    "maxFeePerGas": "94901028208"
+  },
+  "medium": {
+    "maxPriorityFeePerGas": "2340000000",
+    "maxFeePerGas": "96071028208"
+  },
+  "high": {
+    "maxPriorityFeePerGas": "5850000000",
+    "maxFeePerGas": "99581028208"
+  },
+  "instant": {
+    "maxPriorityFeePerGas": "5850000000",
+    "maxFeePerGas": "129455336670"
+  }
 }
 ```
 

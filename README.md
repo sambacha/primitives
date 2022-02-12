@@ -2,8 +2,6 @@
 
 ---
 
-> a (shared) engineering blog 
-
-
+> a (shared) engineering blog
 
 ![](https://d.pr/i/6QoIU0.jpg)

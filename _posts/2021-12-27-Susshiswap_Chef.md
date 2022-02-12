@@ -1,44 +1,59 @@
 ---
 created: 2021-12-26T17:37:10 (UTC -08:00)
-tags: [analysis,sushiswap,protocol]
+tags: [analysis, sushiswap, protocol]
 source: https://chowdera.com/2021/07/20210726071642995z.html
-author: 
+author:
 ---
 
 # Analysis of sushiswap protocol - 文章整合
 
 > ## Excerpt
-> Protocol Brief  SushiSwap It's a bifurcation from Uniswap Decentrali
+>
+> Protocol Brief SushiSwap It's a bifurcation from Uniswap Decentrali
 
 ---
+
 #### **Protocol Brief**
 
-SushiSwap is a bifurcation from UniswapV2, which itself can trace back to Bancor Protocol.
- It continues in the trading model Uniswap The core design of ——AMM( Auto market makers ) Model , But with Uniswap The difference is SushiSwap Added economic reward model ,SushiSwap The transaction fee is 0.3%, among 0.25% Direct distribution to liquidity providers ,0.05% Buy into SUSHI And assigned to Sushi Token holders (Uniswap It is through the switch mode to decide whether to 0.05% The service charge to the developer team ),Sushi Reserved for each distribution 10% Provide future development iteration and safety audit for the project .
+SushiSwap is a bifurcation from UniswapV2, which itself can trace back to Bancor
+Protocol. It continues in the trading model Uniswap The core design of ——AMM(
+Auto market makers ) Model , But with Uniswap The difference is SushiSwap Added
+economic reward model ,SushiSwap The transaction fee is 0.3%, among 0.25% Direct
+distribution to liquidity providers ,0.05% Buy into SUSHI And assigned to Sushi
+Token holders (Uniswap It is through the switch mode to decide whether to 0.05%
+The service charge to the developer team ),Sushi Reserved for each distribution
+10% Provide future development iteration and safety audit for the project .
 
-
-> Sushiswap GitHub
- > https://github.com/sushiswap/sushiswap
+> Sushiswap GitHub https://github.com/sushiswap/sushiswap
 
 #### **vcs structure**
 
-SushiSwap The source code structure of the protocol is as follows , In the later source code analysis stage, we mainly focus on time-locked contracts and SushiSwap Analyze the content of the document ,UniswapV2 The agreement is no longer in-depth , For more information, please refer to the previous UniswapV2 Protocol analysis article ：
+SushiSwap The source code structure of the protocol is as follows , In the later
+source code analysis stage, we mainly focus on time-locked contracts and
+SushiSwap Analyze the content of the document ,UniswapV2 The agreement is no
+longer in-depth , For more information, please refer to the previous UniswapV2
+Protocol analysis article ：
 
 #### **Source code analysis**
 
 Next, we will SushiSwap Analysis of key documents;
 
--   SushiToken： Token contract , With voting function
--   MasterChef： take LPsTokens Deposit in SUSHI fram
--   SushiMaker： Collect transaction fees , Convert to SUSHI And send it to SushiBar
--   SushiBar： mortgage SUSHI To get more SUSHI
--   Migrator： hold MasterChef LP from Uniswap Migrate to SushiSwap
--   GovernorAlpha+Timelock： come from Compound The governance function of
--   UniswapV2：UniswapV2 contract , Minor modifications were made to migrate the contract
+- SushiToken： Token contract , With voting function
+- MasterChef： take LPsTokens Deposit in SUSHI fram
+- SushiMaker： Collect transaction fees , Convert to SUSHI And send it to
+  SushiBar
+- SushiBar： mortgage SUSHI To get more SUSHI
+- Migrator： hold MasterChef LP from Uniswap Migrate to SushiSwap
+- GovernorAlpha+Timelock： come from Compound The governance function of
+- UniswapV2：UniswapV2 contract , Minor modifications were made to migrate the
+  contract
 
 ##### **Timelock**
 
-Timelock The contract will affect any updates executed by the smart contract 48 Hour time lock , Exit in function timelock after , It can be used 5 In multiple team signatures 3 One to execute , The picture below is SushiSwap In contract timelock The recorded information of ：
+Timelock The contract will affect any updates executed by the smart contract 48
+Hour time lock , Exit in function timelock after , It can be used 5 In multiple
+team signatures 3 One to execute , The picture below is SushiSwap In contract
+timelock The recorded information of ：
 
 https://app.sushi.com/governance
 
@@ -187,31 +202,31 @@ At the beginning of the contract, a series of events are defined ：
 ```solidity
 // to update Admin
 event NewAdmin(address indexed newAdmin);
-// newly added Admin To Admin Preparation queue 
+// newly added Admin To Admin Preparation queue
 event NewPendingAdmin(address indexed newPendingAdmin);
-// New delay time 
+// New delay time
 event NewDelay(uint indexed newDelay);
-// Cancel the deal 
+// Cancel the deal
 event CancelTransaction(bytes32 indexed txHash, address indexed target, uint value, string signature,  bytes data, uint eta);
-// Execute the transaction 
+// Execute the transaction
 event ExecuteTransaction(bytes32 indexed txHash, address indexed target, uint value, string signature,  bytes data, uint eta);
-// Add transaction pair transaction queue 
+// Add transaction pair transaction queue
 event QueueTransaction(bytes32 indexed txHash, address indexed target, uint value, string signature, bytes data, uint eta);
 ```
 
 ```solidity
 Then the minimum delay time, maximum delay time and grace period are defined ：
 
-uint public constant GRACE\_PERIOD = 14 days;    // Grace period :14 God 
-uint public constant MINIMUM\_DELAY = 2 days;    // Minimum delay time 
-uint public constant MAXIMUM\_DELAY = 30 days;   // Maximum delay time 
+uint public constant GRACE\_PERIOD = 14 days;    // Grace period :14 God
+uint public constant MINIMUM\_DELAY = 2 days;    // Minimum delay time
+uint public constant MAXIMUM\_DELAY = 30 days;   // Maximum delay time
 
 Then declare the global variables that will be used later ：
 
-address public admin;             //admin Address 
-address public pendingAdmin;    //pendingAdmin Address 
-uint public delay;          // Delay time 
-bool public admin\_initialized;    //admin Is the address initialized 
+address public admin;             //admin Address
+address public pendingAdmin;    //pendingAdmin Address
+uint public delay;          // Delay time
+bool public admin\_initialized;    //admin Is the address initialized
 mapping (bytes32 => bool) public queuedTransactions; // Use mapping Store transaction queue , The key value pair is bytes32=>bool( Transaction bytes and whether in queue Boolean )
 
 Then initialize in the constructor , requirement delay The delay is between the minimum delay and the maximum delay , After initialization admin Address , And will admin\_initialized Set to false:
@@ -226,13 +241,17 @@ Then initialize in the constructor , requirement delay The delay is between the 
     }
 ```
 
-
-After that receive The function is used to accept the transfer of tokens from the external account address and contract address to the current contract address ：
+After that receive The function is used to accept the transfer of tokens from
+the external account address and contract address to the current contract
+address ：
 
     // XXX: function() external payable { }
     receive() external payable { }
 
-setDelay Function to update the delay , The function requires the caller of the function to be the current contract address itself , At the same time, the delay is required to be between the shortest delay and the maximum delay , After through emit Triggering event ：
+setDelay Function to update the delay , The function requires the caller of the
+function to be the current contract address itself , At the same time, the delay
+is required to be between the shortest delay and the maximum delay , After
+through emit Triggering event ：
 
     function setDelay(uint delay\_) public {
         require(msg.sender == address(this), "Timelock::setDelay: Call must come from Timelock.");
@@ -243,7 +262,10 @@ setDelay Function to update the delay , The function requires the caller of the 
         emit NewDelay(delay);
     }
 
-acceptAdmin Function to update admin Address , This function requires the function caller to be admin Address in queue , Then ask to update the current admin And will admin The address in was removed , After through emit Triggering event ：
+acceptAdmin Function to update admin Address , This function requires the
+function caller to be admin Address in queue , Then ask to update the current
+admin And will admin The address in was removed , After through emit Triggering
+event ：
 
     function acceptAdmin() public {
         require(msg.sender == pendingAdmin, "Timelock::acceptAdmin: Call must come from pendingAdmin.");
@@ -253,7 +275,15 @@ acceptAdmin Function to update admin Address , This function requires the functi
         emit NewAdmin(admin);
     }
 
-setPendingAdmin The function sets the in the queue admin Address , First of all, I will check admin\_initialized Is it true( In the constructor admin Address initialized , however admin\_initialized Still for false, Nothing new ), If false entering else, Then check whether the current function caller is admin Address , If so, update admin\_initialized, Set it to true, Then update pendingAdmin, When called the second time setPendingAdmin when , At this time admin\_initialized Already been true, Therefore, the caller will be required to be the current contract address , That's why SushiSwap Officially " Administrative rights have been given to time lock (timelock) contract " Why ：
+setPendingAdmin The function sets the in the queue admin Address , First of all,
+I will check admin_initialized Is it true( In the constructor admin Address
+initialized , however admin_initialized Still for false, Nothing new ), If false
+entering else, Then check whether the current function caller is admin Address ,
+If so, update admin_initialized, Set it to true, Then update pendingAdmin, When
+called the second time setPendingAdmin when , At this time admin_initialized
+Already been true, Therefore, the caller will be required to be the current
+contract address , That's why SushiSwap Officially " Administrative rights have
+been given to time lock (timelock) contract " Why ：
 
     function setPendingAdmin(address pendingAdmin\_) public {
         // allows one time setting of admin for deployment purposes
@@ -268,7 +298,11 @@ setPendingAdmin The function sets the in the queue admin Address , First of all,
         emit NewPendingAdmin(pendingAdmin);
     }
 
-queueTransaction Used to add a transaction to the transaction queue , The function first retrieves whether the function caller is admin Address , Then retrieve whether the delay requirements are met , Then calculate the transaction hash, Then add the transaction to the transaction queue , And pass emit Triggering event ：
+queueTransaction Used to add a transaction to the transaction queue , The
+function first retrieves whether the function caller is admin Address , Then
+retrieve whether the delay requirements are met , Then calculate the transaction
+hash, Then add the transaction to the transaction queue , And pass emit
+Triggering event ：
 
     function queueTransaction(address target, uint value, string memory signature, bytes memory data, uint eta) public returns (bytes32) {
         require(msg.sender == admin, "Timelock::queueTransaction: Call must come from admin.");
@@ -281,7 +315,10 @@ queueTransaction Used to add a transaction to the transaction queue , The functi
         return txHash;
     }
 
-cancelTransaction The function cancels a transaction in the transaction queue , First, it will retrieve whether the caller of the current function is a contract admin Address , Then calculate a transaction hash, Then remove the transaction from the transaction queue , After through emit Triggering event ：
+cancelTransaction The function cancels a transaction in the transaction queue ,
+First, it will retrieve whether the caller of the current function is a contract
+admin Address , Then calculate a transaction hash, Then remove the transaction
+from the transaction queue , After through emit Triggering event ：
 
     function cancelTransaction(address target, uint value, string memory signature, bytes memory data, uint eta) public {
         require(msg.sender == admin, "Timelock::cancelTransaction: Call must come from admin.");
@@ -292,7 +329,11 @@ cancelTransaction The function cancels a transaction in the transaction queue , 
         emit CancelTransaction(txHash, target, value, signature, data, eta);
     }
 
-executeTransaction Function to execute a transaction , This function first retrieves whether the caller of the current function is admin Address , Then calculate a transaction hash, Then retrieve whether the delay condition is met , Then remove the transaction from the transaction queue , And then through call Call execute transaction , Finally through emit Triggering event ：
+executeTransaction Function to execute a transaction , This function first
+retrieves whether the caller of the current function is admin Address , Then
+calculate a transaction hash, Then retrieve whether the delay condition is met ,
+Then remove the transaction from the transaction queue , And then through call
+Call execute transaction , Finally through emit Triggering event ：
 
     function executeTransaction(address target, uint value, string memory signature, bytes memory data, uint eta) public payable returns (bytes memory) {
         require(msg.sender == admin, "Timelock::executeTransaction: Call must come from admin.");
@@ -321,7 +362,8 @@ executeTransaction Function to execute a transaction , This function first retri
         return returnData;
     }
 
-getBlockTimestamp The function is simple , Just get the timestamp of the current block ：
+getBlockTimestamp The function is simple , Just get the timestamp of the current
+block ：
 
     function getBlockTimestamp() internal view returns (uint) {
         // solium-disable-next-line security/no-block-members
@@ -330,23 +372,21 @@ getBlockTimestamp The function is simple , Just get the timestamp of the current
 
 ##### **SushiToken**
 
-SushiToken It's a token contract , With voting function , The following is the official source code ：
+SushiToken It's a token contract , With voting function , The following is the
+official source code ：
 
 // SPDX-License-Identifier: MIT
 
 pragma solidity 0.6.12;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol"; import
+"@openzeppelin/contracts/access/Ownable.sol";
 
-
-// SushiToken with Governance.
-contract SushiToken is ERC20("SushiToken", "SUSHI"), Ownable {
-    /// @notice Creates \`\_amount\` token to \`\_to\`. Must only be called by the owner (MasterChef).
-    function mint(address \_to, uint256 \_amount) public onlyOwner {
-        \_mint(\_to, \_amount);
-        \_moveDelegates(address(0), \_delegates\[\_to\], \_amount);
-    }
+// SushiToken with Governance. contract SushiToken is ERC20("SushiToken",
+"SUSHI"), Ownable { /// @notice Creates \`\_amount\` token to \`\_to\`. Must
+only be called by the owner (MasterChef). function mint(address \_to, uint256
+\_amount) public onlyOwner { \_mint(\_to, \_amount); \_moveDelegates(address(0),
+\_delegates\[\_to\], \_amount); }
 
     // Copied and modified from YAM code:
     // https://github.com/yam-finance/yam-protocol/blob/master/contracts/token/YAMGovernanceStorage.sol
@@ -392,17 +432,12 @@ contract SushiToken is ERC20("SushiToken", "SUSHI"), Ownable {
         external
         view
         returns (address)
-{
-        return \_delegates\[delegator\];
-    }
 
-   /\*\*
-    \* @notice Delegate votes from \`msg.sender\` to \`delegatee\`
-    \* @param delegatee The address to delegate votes to
-    \*/
-    function delegate(address delegatee) external {
-        return \_delegate(msg.sender, delegatee);
-    }
+{ return \_delegates\[delegator\]; }
+
+/\*\* \* @notice Delegate votes from \`msg.sender\` to \`delegatee\` \* @param
+delegatee The address to delegate votes to \*/ function delegate(address
+delegatee) external { return \_delegate(msg.sender, delegatee); }
 
     /\*\*
      \* @notice Delegates votes from signatory to \`delegatee\`
@@ -422,15 +457,9 @@ contract SushiToken is ERC20("SushiToken", "SUSHI"), Ownable {
         bytes32 s
     )
         external
-{
-        bytes32 domainSeparator = keccak256(
-            abi.encode(
-                DOMAIN\_TYPEHASH,
-                keccak256(bytes(name())),
-                getChainId(),
-                address(this)
-            )
-        );
+
+{ bytes32 domainSeparator = keccak256( abi.encode( DOMAIN_TYPEHASH,
+keccak256(bytes(name())), getChainId(), address(this) ) );
 
         bytes32 structHash = keccak256(
             abi.encode(
@@ -465,10 +494,9 @@ contract SushiToken is ERC20("SushiToken", "SUSHI"), Ownable {
         external
         view
         returns (uint256)
-{
-        uint32 nCheckpoints = numCheckpoints\[account\];
-        return nCheckpoints > 0 ? checkpoints\[account\]\[nCheckpoints - 1\].votes : 0;
-    }
+
+{ uint32 nCheckpoints = numCheckpoints\[account\]; return nCheckpoints > 0 ?
+checkpoints\[account\]\[nCheckpoints - 1\].votes : 0; }
 
     /\*\*
      \* @notice Determine the prior number of votes for an account as of a block number
@@ -481,8 +509,9 @@ contract SushiToken is ERC20("SushiToken", "SUSHI"), Ownable {
         external
         view
         returns (uint256)
-{
-        require(blockNumber < block.number, "SUSHI::getPriorVotes: not yet determined");
+
+{ require(blockNumber < block.number, "SUSHI::getPriorVotes: not yet
+determined");
 
         uint32 nCheckpoints = numCheckpoints\[account\];
         if (nCheckpoints == 0) {
@@ -517,10 +546,10 @@ contract SushiToken is ERC20("SushiToken", "SUSHI"), Ownable {
 
     function \_delegate(address delegator, address delegatee)
         internal
-{
-        address currentDelegate = \_delegates\[delegator\];
-        uint256 delegatorBalance = balanceOf(delegator); // balance of underlying SUSHIs (not scaled);
-        \_delegates\[delegator\] = delegatee;
+
+{ address currentDelegate = \_delegates\[delegator\]; uint256 delegatorBalance =
+balanceOf(delegator); // balance of underlying SUSHIs (not scaled);
+\_delegates\[delegator\] = delegatee;
 
         emit DelegateChanged(delegator, currentDelegate, delegatee);
 
@@ -554,8 +583,9 @@ contract SushiToken is ERC20("SushiToken", "SUSHI"), Ownable {
         uint256 newVotes
     )
         internal
-{
-        uint32 blockNumber = safe32(block.number, "SUSHI::\_writeCheckpoint: block number exceeds 32 bits");
+
+{ uint32 blockNumber = safe32(block.number, "SUSHI::\_writeCheckpoint: block
+number exceeds 32 bits");
 
         if (nCheckpoints > 0 && checkpoints\[delegatee\]\[nCheckpoints - 1\].fromBlock == blockNumber) {
             checkpoints\[delegatee\]\[nCheckpoints - 1\].votes = newVotes;
@@ -577,40 +607,47 @@ contract SushiToken is ERC20("SushiToken", "SUSHI"), Ownable {
         assembly { chainId := chainid() }
         return chainId;
     }
+
 }
 
-This function inherits from ERC20( This is a novel way of writing , Use it directly ERC-20 Initializes the current contract with the constructor of ) and Ownable:
+This function inherits from ERC20( This is a novel way of writing , Use it
+directly ERC-20 Initializes the current contract with the constructor of ) and
+Ownable:
 
 contract SushiToken is ERC20("SushiToken", "SUSHI"), Ownable {
 
-After that mint The function is used to issue additional tokens , This function needs to pass two parameters ：
+After that mint The function is used to issue additional tokens , This function
+needs to pass two parameters ：
 
--   to： Address to accept new tokens
--   \_amount： Number of new tokens
+- to： Address to accept new tokens
+- \_amount： Number of new tokens
 
-The function consists of onlyOwner Modifier modification , Contract required owner call , Then call UniswapV2 Of mint Function to perform coinage operations ：
+The function consists of onlyOwner Modifier modification , Contract required
+owner call , Then call UniswapV2 Of mint Function to perform coinage operations
+：
 
     function mint(address \_to, uint256 \_amount) public onlyOwner {
         \_mint(\_to, \_amount);
         \_moveDelegates(address(0), \_delegates\[\_to\], \_amount);
     }
 
- // Ownable.sol
-    // M1 - M5: OK
-    // C1 - C21: OK
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Ownable: caller is not the owner");
-        \_;
-    }
+// Ownable.sol // M1 - M5: OK // C1 - C21: OK modifier onlyOwner() {
+require(msg.sender == owner, "Ownable: caller is not the owner"); \_; }
 
-// UniswapV2ERC20.sol
-    function \_mint(address to, uint value) internal {
-        totalSupply = totalSupply.add(value);
-        balanceOf\[to\] = balanceOf\[to\].add(value);
-        emit Transfer(address(0), to, value);
-    }
+// UniswapV2ERC20.sol function \_mint(address to, uint value) internal {
+totalSupply = totalSupply.add(value); balanceOf\[to\] =
+balanceOf\[to\].add(value); emit Transfer(address(0), to, value); }
 
-Then call \_moveDelegates Transfer entrustment , Here, we take the parameters passed in before as an example for analysis, and go directly to the last if In the sentence , Then according to dstRep To retrieve the inspection site of the account ( A check site that marks the number of votes for a particular block ), When the number of inspection sites of the account is greater than 0, Retrieve the number of votes from the last checkpoint and assign it to srcRepOld, If there are no detection points, it is set to 0, Then use the original number of votes plus the number of assets to be transferred , As new votes ( It can also be said that additional issuance token Related to the number of votes ,1 token representative 1 ticket ), Then call \_writeCheckpoint Update check site ：
+Then call \_moveDelegates Transfer entrustment , Here, we take the parameters
+passed in before as an example for analysis, and go directly to the last if In
+the sentence , Then according to dstRep To retrieve the inspection site of the
+account ( A check site that marks the number of votes for a particular block ),
+When the number of inspection sites of the account is greater than 0, Retrieve
+the number of votes from the last checkpoint and assign it to srcRepOld, If
+there are no detection points, it is set to 0, Then use the original number of
+votes plus the number of assets to be transferred , As new votes ( It can also
+be said that additional issuance token Related to the number of votes ,1 token
+representative 1 ticket ), Then call \_writeCheckpoint Update check site ：
 
     /// @notice A checkpoint for marking number of votes from a given block
     struct Checkpoint {
@@ -623,15 +660,12 @@ Then call \_moveDelegates Transfer entrustment , Here, we take the parameters pa
     /// @notice The number of checkpoints for each account
     mapping (address => uint32) public numCheckpoints;
 
-  function \_moveDelegates(address srcRep, address dstRep, uint256 amount) internal {
-        if (srcRep != dstRep && amount > 0) {
-            if (srcRep != address(0)) {
-                // decrease old representative
-                uint32 srcRepNum = numCheckpoints\[srcRep\];
-                uint256 srcRepOld = srcRepNum > 0 ? checkpoints\[srcRep\]\[srcRepNum - 1\].votes : 0;
-                uint256 srcRepNew = srcRepOld.sub(amount);
-                \_writeCheckpoint(srcRep, srcRepNum, srcRepOld, srcRepNew);
-            }
+function \_moveDelegates(address srcRep, address dstRep, uint256 amount)
+internal { if (srcRep != dstRep && amount > 0) { if (srcRep != address(0)) { //
+decrease old representative uint32 srcRepNum = numCheckpoints\[srcRep\]; uint256
+srcRepOld = srcRepNum > 0 ? checkpoints\[srcRep\]\[srcRepNum - 1\].votes : 0;
+uint256 srcRepNew = srcRepOld.sub(amount); \_writeCheckpoint(srcRep, srcRepNum,
+srcRepOld, srcRepNew); }
 
             if (dstRep != address(0)) {
                 // increase new representative
@@ -643,24 +677,31 @@ Then call \_moveDelegates Transfer entrustment , Here, we take the parameters pa
         }
     }
 
-\_writeCheckpoint The code is as follows , The parameters here are described as follows ：
+\_writeCheckpoint The code is as follows , The parameters here are described as
+follows ：
 
--   delegatee： Accept token Address
--   nCheckpoints： Number of original checkpoints
--   oldVotes： Number of old votes
--   newVotes： Number of new votes
+- delegatee： Accept token Address
+- nCheckpoints： Number of original checkpoints
+- oldVotes： Number of old votes
+- newVotes： Number of new votes
 
-Then get the current number of blocks , Then check whether the number of original checkpoints is greater than 0, Accept token Of the previous checkpoint corresponding to the address fromBlock Is it consistent with the current number of blocks , Update accepted if consistent token Voting of the previous checkpoint corresponding to the address , Otherwise, the update is accepted token The current check site of the address votes , At the same time, add the number of inspection sites 1, After through emit Triggering event , In general, coinage is accompanied by the recording and distribution of votes ：
+Then get the current number of blocks , Then check whether the number of
+original checkpoints is greater than 0, Accept token Of the previous checkpoint
+corresponding to the address fromBlock Is it consistent with the current number
+of blocks , Update accepted if consistent token Voting of the previous
+checkpoint corresponding to the address , Otherwise, the update is accepted
+token The current check site of the address votes , At the same time, add the
+number of inspection sites 1, After through emit Triggering event , In general,
+coinage is accompanied by the recording and distribution of votes ：
 
     function \_writeCheckpoint(
         address delegatee,
         uint32 nCheckpoints,
         uint256 oldVotes,
         uint256 newVotes
-)
-        internal
-{
-        uint32 blockNumber = safe32(block.number, "SUSHI::\_writeCheckpoint: block number exceeds 32 bits");
+
+) internal { uint32 blockNumber = safe32(block.number,
+"SUSHI::\_writeCheckpoint: block number exceeds 32 bits");
 
         if (nCheckpoints > 0 && checkpoints\[delegatee\]\[nCheckpoints - 1\].fromBlock == blockNumber) {
             checkpoints\[delegatee\]\[nCheckpoints - 1\].votes = newVotes;
@@ -679,12 +720,13 @@ Then get the current number of blocks , Then check whether the number of origina
 Here are some global variables defined , Some of them have been introduced to ：
 
     /// @notice A record of votes checkpoints for each account, by index
-  //  Voting checkpoint records for each account listed by index 
-    mapping (address => mapping (uint32 => Checkpoint)) public checkpoints;
+
+// Voting checkpoint records for each account listed by index mapping (address
+=> mapping (uint32 => Checkpoint)) public checkpoints;
 
     /// @notice The number of checkpoints for each account
-  //   Checkpoints per account 
-    mapping (address => uint32) public numCheckpoints;
+
+// Checkpoints per account mapping (address => uint32) public numCheckpoints;
 
     /// @notice The EIP-712 typehash for the contract's domain
     bytes32 public constant DOMAIN\_TYPEHASH = keccak256("EIP712Domain(string name,uint256 chainId,address verifyingContract)");
@@ -693,7 +735,7 @@ Here are some global variables defined , Some of them have been introduced to �
     bytes32 public constant DELEGATION\_TYPEHASH = keccak256("Delegation(address delegatee,uint256 nonce,uint256 expiry)");
 
     /// @notice A record of states for signing / validating signatures
-    //  Signature / Verify the status record of the signature 
+    //  Signature / Verify the status record of the signature
     mapping (address => uint) public nonces;
 
 Then there are two events ：
@@ -704,7 +746,8 @@ Then there are two events ：
     /// @notice An event thats emitted when a delegate account's vote balance changes
     event DelegateVotesChanged(address indexed delegate, uint previousBalance, uint newBalance);
 
-After that delegates The function is used to vote for the function caller delegator：
+After that delegates The function is used to vote for the function caller
+delegator：
 
     /\*\*
      \* @notice Delegate votes from \`msg.sender\` to \`delegatee\`
@@ -714,25 +757,20 @@ After that delegates The function is used to vote for the function caller delega
         external
         view
         returns (address)
-{
-        return \_delegates\[delegator\];
-    }
 
-delegatee The function is also used to deliver the ticket of the function caller to the specified address , Different from the above, this function calls \_moveDelegates Used to transfer delegates ：
+{ return \_delegates\[delegator\]; }
 
-   /\*\*
-    \* @notice Delegate votes from \`msg.sender\` to \`delegatee\`
-    \* @param delegatee The address to delegate votes to
-    \*/
-    function delegate(address delegatee) external {
-        return \_delegate(msg.sender, delegatee);
-    }
-    function \_delegate(address delegator, address delegatee)
-        internal
-{
-        address currentDelegate = \_delegates\[delegator\];
-        uint256 delegatorBalance = balanceOf(delegator); // balance of underlying SUSHIs (not scaled);
-        \_delegates\[delegator\] = delegatee;
+delegatee The function is also used to deliver the ticket of the function caller
+to the specified address , Different from the above, this function calls
+\_moveDelegates Used to transfer delegates ：
+
+/\*\* \* @notice Delegate votes from \`msg.sender\` to \`delegatee\` \* @param
+delegatee The address to delegate votes to \*/ function delegate(address
+delegatee) external { return \_delegate(msg.sender, delegatee); } function
+\_delegate(address delegator, address delegatee) internal { address
+currentDelegate = \_delegates\[delegator\]; uint256 delegatorBalance =
+balanceOf(delegator); // balance of underlying SUSHIs (not scaled);
+\_delegates\[delegator\] = delegatee;
 
         emit DelegateChanged(delegator, currentDelegate, delegatee);
 
@@ -741,64 +779,58 @@ delegatee The function is also used to deliver the ticket of the function caller
 
 From the signatory to the authorized person's representative to vote ：
 
--   delegatee： Address to which the vote will be delegated
--   nonce： Contract status required to match signature
--   expiry： Time when the expired signature expires
--   v： Signed recovery bytes
--   r：ECDSA Signature pair r Half
--   s： yes ECDSA Half of the signature pair
+- delegatee： Address to which the vote will be delegated
+- nonce： Contract status required to match signature
+- expiry： Time when the expired signature expires
+- v： Signed recovery bytes
+- r：ECDSA Signature pair r Half
+- s： yes ECDSA Half of the signature pair
 
-    /\*\*
-     \* @notice Delegates votes from signatory to \`delegatee\`
-     \* @param delegatee The address to delegate votes to
-     \* @param nonce The contract state required to match the signature
-     \* @param expiry The time at which to expire the signature
-     \* @param v The recovery byte of the signature
-     \* @param r Half of the ECDSA signature pair
-     \* @param s Half of the ECDSA signature pair
-     \*/
-    function delegateBySig(
-        address delegatee,
-        uint nonce,
-        uint expiry,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    )
-        external
-{
-        bytes32 domainSeparator = keccak256(
-            abi.encode(
-                DOMAIN\_TYPEHASH,
-                keccak256(bytes(name())),
-                getChainId(),
-                address(this)
-            )
-        );
+      /\*\*
+       \* @notice Delegates votes from signatory to \`delegatee\`
+       \* @param delegatee The address to delegate votes to
+       \* @param nonce The contract state required to match the signature
+       \* @param expiry The time at which to expire the signature
+       \* @param v The recovery byte of the signature
+       \* @param r Half of the ECDSA signature pair
+       \* @param s Half of the ECDSA signature pair
+       \*/
+      function delegateBySig(
+          address delegatee,
+          uint nonce,
+          uint expiry,
+          uint8 v,
+          bytes32 r,
+          bytes32 s
+      )
+          external
 
-        bytes32 structHash = keccak256(
-            abi.encode(
-                DELEGATION\_TYPEHASH,
-                delegatee,
-                nonce,
-                expiry
-            )
-        );
+  { bytes32 domainSeparator = keccak256( abi.encode( DOMAIN_TYPEHASH,
+  keccak256(bytes(name())), getChainId(), address(this) ) );
 
-        bytes32 digest = keccak256(
-            abi.encodePacked(
-                "\\x19\\x01",
-                domainSeparator,
-                structHash
-            )
-        );
+          bytes32 structHash = keccak256(
+              abi.encode(
+                  DELEGATION\_TYPEHASH,
+                  delegatee,
+                  nonce,
+                  expiry
+              )
+          );
 
-        address signatory = ecrecover(digest, v, r, s);
-        require(signatory != address(0), "SUSHI::delegateBySig: invalid signature");
-        require(nonce == nonces\[signatory\]++, "SUSHI::delegateBySig: invalid nonce");
-        require(now <= expiry, "SUSHI::delegateBySig: signature expired");
-        return \_delegate(signatory, delegatee);
-    }
+          bytes32 digest = keccak256(
+              abi.encodePacked(
+                  "\\x19\\x01",
+                  domainSeparator,
+                  structHash
+              )
+          );
+
+          address signatory = ecrecover(digest, v, r, s);
+          require(signatory != address(0), "SUSHI::delegateBySig: invalid signature");
+          require(nonce == nonces\[signatory\]++, "SUSHI::delegateBySig: invalid nonce");
+          require(now <= expiry, "SUSHI::delegateBySig: signature expired");
+          return \_delegate(signatory, delegatee);
+      }
 
 getCurrentVotes Used to get the current vote ：
 
@@ -811,12 +843,12 @@ getCurrentVotes Used to get the current vote ：
         external
         view
         returns (uint256)
-{
-        uint32 nCheckpoints = numCheckpoints\[account\];
-        return nCheckpoints > 0 ? checkpoints\[account\]\[nCheckpoints - 1\].votes : 0;
-    }
 
-getPriorVotes Function to determine the number of priority votes for an account starting with a block number ：
+{ uint32 nCheckpoints = numCheckpoints\[account\]; return nCheckpoints > 0 ?
+checkpoints\[account\]\[nCheckpoints - 1\].votes : 0; }
+
+getPriorVotes Function to determine the number of priority votes for an account
+starting with a block number ：
 
     /\*\*
      \* @notice Determine the prior number of votes for an account as of a block number
@@ -829,8 +861,9 @@ getPriorVotes Function to determine the number of priority votes for an account 
         external
         view
         returns (uint256)
-{
-        require(blockNumber < block.number, "SUSHI::getPriorVotes: not yet determined");
+
+{ require(blockNumber < block.number, "SUSHI::getPriorVotes: not yet
+determined");
 
         uint32 nCheckpoints = numCheckpoints\[account\];
         if (nCheckpoints == 0) {
@@ -873,92 +906,61 @@ getChainId The function retrieves the current getChainId：
 
 ##### **MasterChef**
 
-MasterChef The main purpose of the contract is to LPsTokens Deposit in SUSHI fram, The following is the official contract source code ：
+MasterChef The main purpose of the contract is to LPsTokens Deposit in SUSHI
+fram, The following is the official contract source code ：
 
 // SPDX-License-Identifier: MIT
 
 pragma solidity 0.6.12;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "@openzeppelin/contracts/utils/EnumerableSet.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "./SushiToken.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol"; import
+"@openzeppelin/contracts/token/ERC20/SafeERC20.sol"; import
+"@openzeppelin/contracts/utils/EnumerableSet.sol"; import
+"@openzeppelin/contracts/math/SafeMath.sol"; import
+"@openzeppelin/contracts/access/Ownable.sol"; import "./SushiToken.sol";
 
-interface IMigratorChef {
-    // Perform LP token migration from legacy UniswapV2 to SushiSwap.
-    // Take the current LP token address and return the new LP token address.
-    // Migrator should have full access to the caller's LP token.
-    // Return the new LP token address.
-    //
-    // XXX Migrator must have allowance access to UniswapV2 LP tokens.
-    // SushiSwap must mint EXACTLY the same amount of SushiSwap LP tokens or
-    // else something bad will happen. Traditional UniswapV2 does not
-    // do that so be careful!
-    function migrate(IERC20 token) external returns (IERC20);
-}
+interface IMigratorChef { // Perform LP token migration from legacy UniswapV2 to
+SushiSwap. // Take the current LP token address and return the new LP token
+address. // Migrator should have full access to the caller's LP token. // Return
+the new LP token address. // // XXX Migrator must have allowance access to
+UniswapV2 LP tokens. // SushiSwap must mint EXACTLY the same amount of SushiSwap
+LP tokens or // else something bad will happen. Traditional UniswapV2 does not
+// do that so be careful! function migrate(IERC20 token) external returns
+(IERC20); }
 
-// MasterChef is the master of Sushi. He can make Sushi and he is a fair guy.
-//
+// MasterChef is the master of Sushi. He can make Sushi and he is a fair guy. //
 // Note that it's ownable and the owner wields tremendous power. The ownership
 // will be transferred to a governance smart contract once SUSHI is sufficiently
-// distributed and the community can show to govern itself.
-//
-// Have fun reading it. Hopefully it's bug-free. God bless.
-contract MasterChef is Ownable {
-    using SafeMath for uint256;
-    using SafeERC20 for IERC20;
-    // Info of each user.
-    struct UserInfo {
-        uint256 amount; // How many LP tokens the user has provided.
-        uint256 rewardDebt; // Reward debt. See explanation below.
-        //
-        // We do some fancy math here. Basically, any point in time, the amount of SUSHIs
-        // entitled to a user but is pending to be distributed is:
-        //
-        //   pending reward = (user.amount \* pool.accSushiPerShare) - user.rewardDebt
-        //
-        // Whenever a user deposits or withdraws LP tokens to a pool. Here's what happens:
-        //   1. The pool's \`accSushiPerShare\` (and \`lastRewardBlock\`) gets updated.
-        //   2. User receives the pending reward sent to his/her address.
-        //   3. User's \`amount\` gets updated.
-        //   4. User's \`rewardDebt\` gets updated.
-    }
-    // Info of each pool.
-    struct PoolInfo {
-        IERC20 lpToken; // Address of LP token contract.
-        uint256 allocPoint; // How many allocation points assigned to this pool. SUSHIs to distribute per block.
-        uint256 lastRewardBlock; // Last block number that SUSHIs distribution occurs.
-        uint256 accSushiPerShare; // Accumulated SUSHIs per share, times 1e12. See below.
-    }
-    // The SUSHI TOKEN!
-    SushiToken public sushi;
-    // Dev address.
-    address public devaddr;
-    // Block number when bonus SUSHI period ends.
-    uint256 public bonusEndBlock;
-    // SUSHI tokens created per block.
-    uint256 public sushiPerBlock;
-    // Bonus muliplier for early sushi makers.
-    uint256 public constant BONUS\_MULTIPLIER = 10;
-    // The migrator contract. It has a lot of power. Can only be set through governance (owner).
-    IMigratorChef public migrator;
-    // Info of each pool.
-    PoolInfo\[\] public poolInfo;
-    // Info of each user that stakes LP tokens.
-    mapping(uint256 => mapping(address => UserInfo)) public userInfo;
-    // Total allocation poitns. Must be the sum of all allocation points in all pools.
-    uint256 public totalAllocPoint = 0;
-    // The block number when SUSHI mining starts.
-    uint256 public startBlock;
-    event Deposit(address indexed user, uint256 indexed pid, uint256 amount);
-    event Withdraw(address indexed user, uint256 indexed pid, uint256 amount);
-    event EmergencyWithdraw(
-        address indexed user,
-        uint256 indexed pid,
-        uint256 amount
-    );
+// distributed and the community can show to govern itself. // // Have fun
+reading it. Hopefully it's bug-free. God bless. contract MasterChef is Ownable {
+using SafeMath for uint256; using SafeERC20 for IERC20; // Info of each user.
+struct UserInfo { uint256 amount; // How many LP tokens the user has provided.
+uint256 rewardDebt; // Reward debt. See explanation below. // // We do some
+fancy math here. Basically, any point in time, the amount of SUSHIs // entitled
+to a user but is pending to be distributed is: // // pending reward =
+(user.amount \* pool.accSushiPerShare) - user.rewardDebt // // Whenever a user
+deposits or withdraws LP tokens to a pool. Here's what happens: // 1. The pool's
+\`accSushiPerShare\` (and \`lastRewardBlock\`) gets updated. // 2. User receives
+the pending reward sent to his/her address. // 3. User's \`amount\` gets
+updated. // 4. User's \`rewardDebt\` gets updated. } // Info of each pool.
+struct PoolInfo { IERC20 lpToken; // Address of LP token contract. uint256
+allocPoint; // How many allocation points assigned to this pool. SUSHIs to
+distribute per block. uint256 lastRewardBlock; // Last block number that SUSHIs
+distribution occurs. uint256 accSushiPerShare; // Accumulated SUSHIs per share,
+times 1e12. See below. } // The SUSHI TOKEN! SushiToken public sushi; // Dev
+address. address public devaddr; // Block number when bonus SUSHI period ends.
+uint256 public bonusEndBlock; // SUSHI tokens created per block. uint256 public
+sushiPerBlock; // Bonus muliplier for early sushi makers. uint256 public
+constant BONUS_MULTIPLIER = 10; // The migrator contract. It has a lot of power.
+Can only be set through governance (owner). IMigratorChef public migrator; //
+Info of each pool. PoolInfo\[\] public poolInfo; // Info of each user that
+stakes LP tokens. mapping(uint256 => mapping(address => UserInfo)) public
+userInfo; // Total allocation poitns. Must be the sum of all allocation points
+in all pools. uint256 public totalAllocPoint = 0; // The block number when SUSHI
+mining starts. uint256 public startBlock; event Deposit(address indexed user,
+uint256 indexed pid, uint256 amount); event Withdraw(address indexed user,
+uint256 indexed pid, uint256 amount); event EmergencyWithdraw( address indexed
+user, uint256 indexed pid, uint256 amount );
 
     constructor(
         SushiToken \_sushi,
@@ -966,13 +968,9 @@ contract MasterChef is Ownable {
         uint256 \_sushiPerBlock,
         uint256 \_startBlock,
         uint256 \_bonusEndBlock
-) public {
-        sushi = \_sushi;
-        devaddr = \_devaddr;
-        sushiPerBlock = \_sushiPerBlock;
-        bonusEndBlock = \_bonusEndBlock;
-        startBlock = \_startBlock;
-    }
+
+) public { sushi = \_sushi; devaddr = \_devaddr; sushiPerBlock =
+\_sushiPerBlock; bonusEndBlock = \_bonusEndBlock; startBlock = \_startBlock; }
 
     function poolLength() external view returns (uint256) {
         return poolInfo.length;
@@ -984,37 +982,22 @@ contract MasterChef is Ownable {
         uint256 \_allocPoint,
         IERC20 \_lpToken,
         bool \_withUpdate
-) public onlyOwner {
-        if (\_withUpdate) {
-            massUpdatePools();
-        }
-        uint256 lastRewardBlock =
-            block.number > startBlock ? block.number : startBlock;
-        totalAllocPoint = totalAllocPoint.add(\_allocPoint);
-        poolInfo.push(
-            PoolInfo({
-                lpToken: \_lpToken,
-                allocPoint: \_allocPoint,
-                lastRewardBlock: lastRewardBlock,
-                accSushiPerShare: 0
-            })
-        );
-    }
+
+) public onlyOwner { if (\_withUpdate) { massUpdatePools(); } uint256
+lastRewardBlock = block.number > startBlock ? block.number : startBlock;
+totalAllocPoint = totalAllocPoint.add(\_allocPoint); poolInfo.push( PoolInfo({
+lpToken: \_lpToken, allocPoint: \_allocPoint, lastRewardBlock: lastRewardBlock,
+accSushiPerShare: 0 }) ); }
 
     // Update the given pool's SUSHI allocation point. Can only be called by the owner.
     function set(
         uint256 \_pid,
         uint256 \_allocPoint,
         bool \_withUpdate
-) public onlyOwner {
-        if (\_withUpdate) {
-            massUpdatePools();
-        }
-        totalAllocPoint = totalAllocPoint.sub(poolInfo\[\_pid\].allocPoint).add(
-            \_allocPoint
-        );
-        poolInfo\[\_pid\].allocPoint = \_allocPoint;
-    }
+
+) public onlyOwner { if (\_withUpdate) { massUpdatePools(); } totalAllocPoint =
+totalAllocPoint.sub(poolInfo\[\_pid\].allocPoint).add( \_allocPoint );
+poolInfo\[\_pid\].allocPoint = \_allocPoint; }
 
     // Set the migrator contract. Can only be called by the owner.
     function setMigrator(IMigratorChef \_migrator) public onlyOwner {
@@ -1038,42 +1021,26 @@ contract MasterChef is Ownable {
         public
         view
         returns (uint256)
-{
-        if (\_to <= bonusEndBlock) {
-            return \_to.sub(\_from).mul(BONUS\_MULTIPLIER);
-        } else if (\_from >= bonusEndBlock) {
-            return \_to.sub(\_from);
-        } else {
-            return
-                bonusEndBlock.sub(\_from).mul(BONUS\_MULTIPLIER).add(
-                    \_to.sub(bonusEndBlock)
-                );
-        }
-    }
+
+{ if (\_to <= bonusEndBlock) { return \_to.sub(\_from).mul(BONUS_MULTIPLIER); }
+else if (\_from >= bonusEndBlock) { return \_to.sub(\_from); } else { return
+bonusEndBlock.sub(\_from).mul(BONUS_MULTIPLIER).add( \_to.sub(bonusEndBlock) );
+} }
 
     // View function to see pending SUSHIs on frontend.
     function pendingSushi(uint256 \_pid, address \_user)
         external
         view
         returns (uint256)
-{
-        PoolInfo storage pool = poolInfo\[\_pid\];
-        UserInfo storage user = userInfo\[\_pid\]\[\_user\];
-        uint256 accSushiPerShare = pool.accSushiPerShare;
-        uint256 lpSupply = pool.lpToken.balanceOf(address(this));
-        if (block.number > pool.lastRewardBlock && lpSupply != 0) {
-            uint256 multiplier =
-                getMultiplier(pool.lastRewardBlock, block.number);
-            uint256 sushiReward =
-                multiplier.mul(sushiPerBlock).mul(pool.allocPoint).div(
-                    totalAllocPoint
-                );
-            accSushiPerShare = accSushiPerShare.add(
-                sushiReward.mul(1e12).div(lpSupply)
-            );
-        }
-        return user.amount.mul(accSushiPerShare).div(1e12).sub(user.rewardDebt);
-    }
+
+{ PoolInfo storage pool = poolInfo\[\_pid\]; UserInfo storage user =
+userInfo\[\_pid\]\[\_user\]; uint256 accSushiPerShare = pool.accSushiPerShare;
+uint256 lpSupply = pool.lpToken.balanceOf(address(this)); if (block.number >
+pool.lastRewardBlock && lpSupply != 0) { uint256 multiplier =
+getMultiplier(pool.lastRewardBlock, block.number); uint256 sushiReward =
+multiplier.mul(sushiPerBlock).mul(pool.allocPoint).div( totalAllocPoint );
+accSushiPerShare = accSushiPerShare.add( sushiReward.mul(1e12).div(lpSupply) );
+} return user.amount.mul(accSushiPerShare).div(1e12).sub(user.rewardDebt); }
 
     // Update reward vairables for all pools. Be careful of gas spending!
     function massUpdatePools() public {
@@ -1171,18 +1138,29 @@ contract MasterChef is Ownable {
         require(msg.sender == devaddr, "dev: wut?");
         devaddr = \_devaddr;
     }
+
 }
 
 The structure defined here UserInfo Used to store user information ：
 
--   amount： User owned LP tokens The number of
--   rewardDebt： A previous liability when the user calculates the reward
+- amount： User owned LP tokens The number of
+- rewardDebt： A previous liability when the user calculates the reward
 
-there rewardDebt It can also be understood as liabilities , Because when everyone mortgages, the rewards in the pool may have begun to be distributed or accumulated , namely accSushiPerShare The value is increasing and changing , After each user is mortgaged, he can't give all the previously accumulated rewards to him , Because he can't generate rewards before he mortgages , So there is a debt , Deduct the reward generated by the whole pool before he mortgages from the total reward , From his mortgage , This is also the source of user reward calculation ：
+there rewardDebt It can also be understood as liabilities , Because when
+everyone mortgages, the rewards in the pool may have begun to be distributed or
+accumulated , namely accSushiPerShare The value is increasing and changing ,
+After each user is mortgaged, he can't give all the previously accumulated
+rewards to him , Because he can't generate rewards before he mortgages , So
+there is a debt , Deduct the reward generated by the whole pool before he
+mortgages from the total reward , From his mortgage , This is also the source of
+user reward calculation ：
 
- pending reward = (user.amount \* pool.accSushiPerShare) - user.rewardDebt
+pending reward = (user.amount \* pool.accSushiPerShare) - user.rewardDebt
 
-At the same time, it can be seen from the annotation information that the user is accessing LP tokens when , In the pool accSushiPerShare、lastRewardBlock、rewardDebt And other information is changing ：
+At the same time, it can be seen from the annotation information that the user
+is accessing LP tokens when , In the pool
+accSushiPerShare、lastRewardBlock、rewardDebt And other information is changing
+：
 
     // Info of each user.
     struct UserInfo {
@@ -1203,54 +1181,49 @@ At the same time, it can be seen from the annotation information that the user i
 
 Structure defined here PoolInfo Used to store pool information ：
 
--   lpToken：LP Token Contract address
--   allocPoint： Pools are allocated from a single block SUSHIs The weight of
--   lastRewardBlock：SUSHIs The number of the last block distributed
--   accSushiPerShare： When calculating mortgage mining, single LP The number of corresponding rewards that a token can get
+- lpToken：LP Token Contract address
+- allocPoint： Pools are allocated from a single block SUSHIs The weight of
+- lastRewardBlock：SUSHIs The number of the last block distributed
+- accSushiPerShare： When calculating mortgage mining, single LP The number of
+  corresponding rewards that a token can get
 
-    // Info of each pool.
-    struct PoolInfo {
-        IERC20 lpToken; // Address of LP token contract.
-        uint256 allocPoint; // How many allocation points assigned to this pool. SUSHIs to distribute per block.
-        uint256 lastRewardBlock; // Last block number that SUSHIs distribution occurs.
-        uint256 accSushiPerShare; // Accumulated SUSHIs per share, times 1e12. See below.
-    }
+  // Info of each pool. struct PoolInfo { IERC20 lpToken; // Address of LP token
+  contract. uint256 allocPoint; // How many allocation points assigned to this
+  pool. SUSHIs to distribute per block. uint256 lastRewardBlock; // Last block
+  number that SUSHIs distribution occurs. uint256 accSushiPerShare; //
+  Accumulated SUSHIs per share, times 1e12. See below. }
 
 After that, the global variables used later are declared ：
 
     // The SUSHI TOKEN!
-    SushiToken public sushi;            //SUSHI Token Contract address 
+    SushiToken public sushi;            //SUSHI Token Contract address
     // Dev address.
-    address public devaddr;              // Production environment address 
+    address public devaddr;              // Production environment address
     // Block number when bonus SUSHI period ends.
-    uint256 public bonusEndBlock;          // Reward SUSHI End time zone block number 
+    uint256 public bonusEndBlock;          // Reward SUSHI End time zone block number
     // SUSHI tokens created per block.
-    uint256 public sushiPerBlock;          // A block can be generated SUSHI Number 
+    uint256 public sushiPerBlock;          // A block can be generated SUSHI Number
     // Bonus muliplier for early sushi makers.
-    uint256 public constant BONUS\_MULTIPLIER = 10;  // In the early sushi Reward double 
+    uint256 public constant BONUS\_MULTIPLIER = 10;  // In the early sushi Reward double
     // The migrator contract. It has a lot of power. Can only be set through governance (owner).
-    IMigratorChef public migrator;          //migrator Contract address 
+    IMigratorChef public migrator;          //migrator Contract address
     // Info of each pool.
-    PoolInfo\[\] public poolInfo;            // An array used to store ore pool information 
+    PoolInfo\[\] public poolInfo;            // An array used to store ore pool information
     // Info of each user that stakes LP tokens.
-    mapping(uint256 => mapping(address => UserInfo)) public userInfo;   // User's mortgage LP Tokens Information about 
+    mapping(uint256 => mapping(address => UserInfo)) public userInfo;   // User's mortgage LP Tokens Information about
     // Total allocation poitns. Must be the sum of all allocation points in all pools.
     uint256 public totalAllocPoint = 0;            // Total distribution weight ( It must be the sum of the assigned weights of all pools )
     // The block number when SUSHI mining starts.
-    uint256 public startBlock;            // The momentum block where mining began 
+    uint256 public startBlock;            // The momentum block where mining began
 
 The sum of defines related events ：
 
-     // Storage 
-  event Deposit(address indexed user, uint256 indexed pid, uint256 amount);
-  // extract 
-    event Withdraw(address indexed user, uint256 indexed pid, uint256 amount);
-   // Emergency withdrawal 
-    event EmergencyWithdraw(
-        address indexed user,
-        uint256 indexed pid,
-        uint256 amount
-);
+     // Storage
+
+event Deposit(address indexed user, uint256 indexed pid, uint256 amount); //
+extract event Withdraw(address indexed user, uint256 indexed pid, uint256
+amount); // Emergency withdrawal event EmergencyWithdraw( address indexed user,
+uint256 indexed pid, uint256 amount );
 
 The subsequent constructor initializes ：
 
@@ -1274,13 +1247,18 @@ poolLength Used to return the current number of pools ：
         return poolInfo.length;
     }
 
-add Function to add a pool , This function can only be used by the contract owner call , And three parameters need to be passed ：
+add Function to add a pool , This function can only be used by the contract
+owner call , And three parameters need to be passed ：
 
--   \_allocPoint： Assign weights (\_allocPoint/totalAllocPoint Assign... To a single block of the current pool SUSHIs Total of )
--   \_lpToken：LP Tokens Contract address
--   \_withUpdate： Update pool
+- \_allocPoint： Assign weights (\_allocPoint/totalAllocPoint Assign... To a
+  single block of the current pool SUSHIs Total of )
+- \_lpToken：LP Tokens Contract address
+- \_withUpdate： Update pool
 
-We'll check here first \_withUpdate Boolean value , If true Then update the pool once , If false, Then retrieve the current number of last reward blocks , Then update the total allocated points , After that, the newly created pool information is stored ：
+We'll check here first \_withUpdate Boolean value , If true Then update the pool
+once , If false, Then retrieve the current number of last reward blocks , Then
+update the total allocated points , After that, the newly created pool
+information is stored ：
 
     // Add a new lp to the pool. Can only be called by the owner.
     // XXX DO NOT add the same LP token more than once. Rewards will be messed up if you do.
@@ -1288,54 +1266,55 @@ We'll check here first \_withUpdate Boolean value , If true Then update the pool
         uint256 \_allocPoint,
         IERC20 \_lpToken,
         bool \_withUpdate
-) public onlyOwner {
-        if (\_withUpdate) {
-            massUpdatePools();
-        }
-        uint256 lastRewardBlock =
-            block.number > startBlock ? block.number : startBlock;
-        totalAllocPoint = totalAllocPoint.add(\_allocPoint);
-        poolInfo.push(
-            PoolInfo({
-                lpToken: \_lpToken,
-                allocPoint: \_allocPoint,
-                lastRewardBlock: lastRewardBlock,
-                accSushiPerShare: 0
-            })
-        );
-    }
 
-set Function to update the in the pool SUSHI Assign points , This function can only be used by the contract owner call , Here you need to pass three parameters ：
+) public onlyOwner { if (\_withUpdate) { massUpdatePools(); } uint256
+lastRewardBlock = block.number > startBlock ? block.number : startBlock;
+totalAllocPoint = totalAllocPoint.add(\_allocPoint); poolInfo.push( PoolInfo({
+lpToken: \_lpToken, allocPoint: \_allocPoint, lastRewardBlock: lastRewardBlock,
+accSushiPerShare: 0 }) ); }
 
--   \_pid： Pool's ID Sequence
--   \_allocPoint： Assign weights (\_allocPoint/totalAllocPoint Assign... To a single block of the current pool SUSHIs Total of )
--   \_withUpdate： Whether to update
+set Function to update the in the pool SUSHI Assign points , This function can
+only be used by the contract owner call , Here you need to pass three parameters
+：
 
-Then check whether it is updated , If true Then update the pool once , If false, Through pid Retrieve the allocated points of the corresponding pool , The assigned points are updated later ：
+- \_pid： Pool's ID Sequence
+- \_allocPoint： Assign weights (\_allocPoint/totalAllocPoint Assign... To a
+  single block of the current pool SUSHIs Total of )
+- \_withUpdate： Whether to update
+
+Then check whether it is updated , If true Then update the pool once , If false,
+Through pid Retrieve the allocated points of the corresponding pool , The
+assigned points are updated later ：
 
     // Update the given pool's SUSHI allocation point. Can only be called by the owner.
     function set(
         uint256 \_pid,
         uint256 \_allocPoint,
         bool \_withUpdate
-) public onlyOwner {
-        if (\_withUpdate) {
-            massUpdatePools();
-        }
-        totalAllocPoint = totalAllocPoint.sub(poolInfo\[\_pid\].allocPoint).add(
-            \_allocPoint
-        );
-        poolInfo\[\_pid\].allocPoint = \_allocPoint;
-    }
 
-setMigrator Functions can only be defined by contract owner call , Used for setting up migrate The address of the contract ：
+) public onlyOwner { if (\_withUpdate) { massUpdatePools(); } totalAllocPoint =
+totalAllocPoint.sub(poolInfo\[\_pid\].allocPoint).add( \_allocPoint );
+poolInfo\[\_pid\].allocPoint = \_allocPoint; }
+
+setMigrator Functions can only be defined by contract owner call , Used for
+setting up migrate The address of the contract ：
 
     // Set the migrator contract. Can only be called by the owner.
     function setMigrator(IMigratorChef \_migrator) public onlyOwner {
         migrator = \_migrator;
     }
 
-migrate The function is used to LP token Move to another one LP In contract , It will be checked here first migrator Whether the address is empty , Then according to pid Parameter to retrieve the corresponding pool information , Later retrieval LpToken Contract address , Query after LpToken Held by the current contract address in the contract LP Token Number , Then call LpToken The contract safeApprove The function returns the current contract address LP Tokens Operation authority authorized to migrator Contract address , Then call migrator The contract migrator Function , Then check LpToken The account corresponding to the current contract address in the contract Lp tokens Is it equal to the current newLpToken Held by the current contract account address in the contract LP Tokens Number , Finally, update the in the pool information lpToken Address
+migrate The function is used to LP token Move to another one LP In contract , It
+will be checked here first migrator Whether the address is empty , Then
+according to pid Parameter to retrieve the corresponding pool information ,
+Later retrieval LpToken Contract address , Query after LpToken Held by the
+current contract address in the contract LP Token Number , Then call LpToken The
+contract safeApprove The function returns the current contract address LP Tokens
+Operation authority authorized to migrator Contract address , Then call migrator
+The contract migrator Function , Then check LpToken The account corresponding to
+the current contract address in the contract Lp tokens Is it equal to the
+current newLpToken Held by the current contract account address in the contract
+LP Tokens Number , Finally, update the in the pool information lpToken Address
 
     // Migrate lp token to another lp contract. Can be called by anyone. We trust that migrator contract is good.
     function migrate(uint256 \_pid) public {
@@ -1349,7 +1328,25 @@ migrate The function is used to LP token Move to another one LP In contract , It
         pool.lpToken = newLpToken;
     }
 
-Now we're right migrate Of migrate The method is analyzed , Look at the specific migration process , This will be passed in from above first lpToken The address of the contract is orig The value of the parameter , The relevant inspection here will not be repeated ( among chef、notBeforeBlock、oldFactory Connect to Migrator The contract is initialized in the constructor , No discussion ), Then use token0 And token1 Store old LpToken Address information of transaction pair in , Then according to token0 and token1 Retrieve whether the corresponding transaction pair exists at present , If not, create a new one , Then use lp Storage LpToken Of function callers in contracts Lp Tokens Number , If at this time lp by 0, Then return directly pair, If lp Not for 0, Will lp Assign a value to desiredLiquidity, Then call LpToken In the contract transferFrom Function transfer lp To LpToken In the contract address , Then call LpToken Contract address burn The function extracts the corresponding two assets by burning liquidity tokens , And reduce the liquidity of transaction pairs accordingly , Finally, by calling the of the current transaction pair mint Function when the user provides mobility ( Provide a certain proportion of two ERC-20 Token to transaction pair ) Add liquidity tokens to liquidity providers and finally complete LP Migration , It should be noted that it must comply with UniswapV2 agreement ：
+Now we're right migrate Of migrate The method is analyzed , Look at the specific
+migration process , This will be passed in from above first lpToken The address
+of the contract is orig The value of the parameter , The relevant inspection
+here will not be repeated ( among chef、notBeforeBlock、oldFactory Connect to
+Migrator The contract is initialized in the constructor , No discussion ), Then
+use token0 And token1 Store old LpToken Address information of transaction pair
+in , Then according to token0 and token1 Retrieve whether the corresponding
+transaction pair exists at present , If not, create a new one , Then use lp
+Storage LpToken Of function callers in contracts Lp Tokens Number , If at this
+time lp by 0, Then return directly pair, If lp Not for 0, Will lp Assign a value
+to desiredLiquidity, Then call LpToken In the contract transferFrom Function
+transfer lp To LpToken In the contract address , Then call LpToken Contract
+address burn The function extracts the corresponding two assets by burning
+liquidity tokens , And reduce the liquidity of transaction pairs accordingly ,
+Finally, by calling the of the current transaction pair mint Function when the
+user provides mobility ( Provide a certain proportion of two ERC-20 Token to
+transaction pair ) Add liquidity tokens to liquidity providers and finally
+complete LP Migration , It should be noted that it must comply with UniswapV2
+agreement ：
 
 // Migrator
 
@@ -1357,16 +1354,12 @@ Now we're right migrate Of migrate The method is analyzed , Look at the specific
 
 pragma solidity 0.6.12;
 
-import "./uniswapv2/interfaces/IUniswapV2Pair.sol";
-import "./uniswapv2/interfaces/IUniswapV2Factory.sol";
+import "./uniswapv2/interfaces/IUniswapV2Pair.sol"; import
+"./uniswapv2/interfaces/IUniswapV2Factory.sol";
 
-
-contract Migrator {
-    address public chef;
-    address public oldFactory;
-    IUniswapV2Factory public factory;
-    uint256 public notBeforeBlock;
-    uint256 public desiredLiquidity = uint256(-1);
+contract Migrator { address public chef; address public oldFactory;
+IUniswapV2Factory public factory; uint256 public notBeforeBlock; uint256 public
+desiredLiquidity = uint256(-1);
 
     constructor(
         address \_chef,
@@ -1399,29 +1392,44 @@ contract Migrator {
         desiredLiquidity = uint256(-1);
         return pair;
     }
+
 }
 
-getMultiplier Function to obtain the reward multiplier , First of all, I will check to Is the address less than SUSHI Number of blocks after a round , If yes, calculate to and from Difference between , Then multiply by BONUS\_MULTIPLIER And back to , If to Greater than ,SUSHI Number of blocks after a round , Then check from Is it greater than SUSHI Number of blocks after a round , If yes, calculate to And from Difference between , Then return , If form Less than SUSHI Number of blocks after a round ,to Greater than SUSHI Number of blocks after a round , The calculation from And to Difference between , Then multiply by BONUS\_MULTIPLIER, And then add to subtract SUSHI Number of blocks after a round ：
+getMultiplier Function to obtain the reward multiplier , First of all, I will
+check to Is the address less than SUSHI Number of blocks after a round , If yes,
+calculate to and from Difference between , Then multiply by BONUS_MULTIPLIER And
+back to , If to Greater than ,SUSHI Number of blocks after a round , Then check
+from Is it greater than SUSHI Number of blocks after a round , If yes, calculate
+to And from Difference between , Then return , If form Less than SUSHI Number of
+blocks after a round ,to Greater than SUSHI Number of blocks after a round , The
+calculation from And to Difference between , Then multiply by BONUS_MULTIPLIER,
+And then add to subtract SUSHI Number of blocks after a round ：
 
     // Return reward multiplier over the given \_from to \_to block.
     function getMultiplier(uint256 \_from, uint256 \_to)
         public
         view
         returns (uint256)
-{
-        if (\_to <= bonusEndBlock) {
-            return \_to.sub(\_from).mul(BONUS\_MULTIPLIER);
-        } else if (\_from >= bonusEndBlock) {
-            return \_to.sub(\_from);
-        } else {
-            return
-                bonusEndBlock.sub(\_from).mul(BONUS\_MULTIPLIER).add(
-                    \_to.sub(bonusEndBlock)
-                );
-        }
-    }
 
-pendingSushi The function is used to retrieve information from a queue SUSHI, The function will first pid To retrieve the corresponding pool , Then according to pid and user Retrieve the user information in the corresponding pool ( Structure information storage ), Then retrieve the data in the pool accSushiPerShare, Then use lpSupply Storage LpToken What is the current contract address in the contract Lp Total amount , Then check whether the current number of blocks is greater than the last reward block in the pool and lpSupply Is it 0, Before calling getMultiplier To calculate the reward multiplier , Then multiply the reward product by a block SUSHI Tokens Number , Then multiply by the assigned weight of the pool ( Pool allocation points divided by total allocation points ), Then update accSushiPerShare( Use accSushiPerShare add sushiReward Then multiply by 1e12 And divide by lpSupply), Then use the information held by the user LpTokens Quantity times accSushiPerShare Then divide by 1e12, Then subtract user liabilities ：
+{ if (\_to <= bonusEndBlock) { return \_to.sub(\_from).mul(BONUS_MULTIPLIER); }
+else if (\_from >= bonusEndBlock) { return \_to.sub(\_from); } else { return
+bonusEndBlock.sub(\_from).mul(BONUS_MULTIPLIER).add( \_to.sub(bonusEndBlock) );
+} }
+
+pendingSushi The function is used to retrieve information from a queue SUSHI,
+The function will first pid To retrieve the corresponding pool , Then according
+to pid and user Retrieve the user information in the corresponding pool (
+Structure information storage ), Then retrieve the data in the pool
+accSushiPerShare, Then use lpSupply Storage LpToken What is the current contract
+address in the contract Lp Total amount , Then check whether the current number
+of blocks is greater than the last reward block in the pool and lpSupply Is it
+0, Before calling getMultiplier To calculate the reward multiplier , Then
+multiply the reward product by a block SUSHI Tokens Number , Then multiply by
+the assigned weight of the pool ( Pool allocation points divided by total
+allocation points ), Then update accSushiPerShare( Use accSushiPerShare add
+sushiReward Then multiply by 1e12 And divide by lpSupply), Then use the
+information held by the user LpTokens Quantity times accSushiPerShare Then
+divide by 1e12, Then subtract user liabilities ：
 
     // View function to see pending SUSHIs on frontend.
     function pendingSushi(uint256 \_pid, address \_user)
@@ -1447,7 +1455,9 @@ pendingSushi The function is used to retrieve information from a queue SUSHI, Th
         return user.amount.mul(accSushiPerShare).div(1e12).sub(user.rewardDebt);
     }
 
-massUpdatePools Used to update the reward pool , Here, first get the number of reward pools , Then update from the first reward pool , The update method is called directly updatePool function ：
+massUpdatePools Used to update the reward pool , Here, first get the number of
+reward pools , Then update from the first reward pool , The update method is
+called directly updatePool function ：
 
     // Update reward vairables for all pools. Be careful of gas spending!
     function massUpdatePools() public {
@@ -1457,7 +1467,20 @@ massUpdatePools Used to update the reward pool , Here, first get the number of r
         }
     }
 
-updatePool Function is the specific implementation of updating the reward pool , First of all, according to pid To retrieve the corresponding pool information , Then check whether the current block number is less than the latest reward block in the pool , If yes, direct return, If it is larger than the latest reward block, retrieve LpTokens The corresponding to the current contract address in the contract address LP Total amount , If LP A total of 0, Then update the last reward block to the current number of blocks , If LP Not for 0, Call getMultiplier To calculate the reward multiplier , Calculated after sushiReward, Then call sushi The contract mint Function issuance sushiReward.div(10) Quantity of quantity SUSHI, This is also what the article said at the beginning "Sushi Reserved for each distribution 10% Provide future development iteration and safety audit for the project ", Then issue additional to the current contract address sushiReward In quantity SUSHI, The last update accSushiPerShare, And the most recent reward block .
+updatePool Function is the specific implementation of updating the reward pool ,
+First of all, according to pid To retrieve the corresponding pool information ,
+Then check whether the current block number is less than the latest reward block
+in the pool , If yes, direct return, If it is larger than the latest reward
+block, retrieve LpTokens The corresponding to the current contract address in
+the contract address LP Total amount , If LP A total of 0, Then update the last
+reward block to the current number of blocks , If LP Not for 0, Call
+getMultiplier To calculate the reward multiplier , Calculated after sushiReward,
+Then call sushi The contract mint Function issuance sushiReward.div(10) Quantity
+of quantity SUSHI, This is also what the article said at the beginning "Sushi
+Reserved for each distribution 10% Provide future development iteration and
+safety audit for the project ", Then issue additional to the current contract
+address sushiReward In quantity SUSHI, The last update accSushiPerShare, And the
+most recent reward block .
 
     // Update reward variables of the given pool to be up-to-date.
     function updatePool(uint256 \_pid) public {
@@ -1483,7 +1506,19 @@ updatePool Function is the specific implementation of updating the reward pool ,
         pool.lastRewardBlock = block.number;
     }
 
-deposit The function is used to LP token Pledge to MasterChef For convenience SUSHI Distribute , The function will first pid Retrieve the corresponding pool , Then according to pid and msg.sender Retrieve information about users in the pool , Then call updatePool Update the pool once , Then retrieve the information held by the user LP token Is it greater than 0, If it is greater than 0 Then calculate once pending Rewards during , The specific calculation method is to use the... Held by the user LP token Number times the number in the pool accSushiPerShare, Then divide by 1e12, And minus the user's incentive liabilities , Then call safeSushiTransfer send out pending In quantity SUSHI To msg.sender, Call later lpToken The contract safeTransferFrom Function will msg.sender In the address \_amount In quantity LpToken Send to current contract , Then update the information held by the user LpToken Total amount , And the user's debt reward , After through emit Triggering event ：
+deposit The function is used to LP token Pledge to MasterChef For convenience
+SUSHI Distribute , The function will first pid Retrieve the corresponding pool ,
+Then according to pid and msg.sender Retrieve information about users in the
+pool , Then call updatePool Update the pool once , Then retrieve the information
+held by the user LP token Is it greater than 0, If it is greater than 0 Then
+calculate once pending Rewards during , The specific calculation method is to
+use the... Held by the user LP token Number times the number in the pool
+accSushiPerShare, Then divide by 1e12, And minus the user's incentive
+liabilities , Then call safeSushiTransfer send out pending In quantity SUSHI To
+msg.sender, Call later lpToken The contract safeTransferFrom Function will
+msg.sender In the address \_amount In quantity LpToken Send to current contract
+, Then update the information held by the user LpToken Total amount , And the
+user's debt reward , After through emit Triggering event ：
 
     // Deposit LP tokens to MasterChef for SUSHI allocation.
     function deposit(uint256 \_pid, uint256 \_amount) public {
@@ -1507,7 +1542,18 @@ deposit The function is used to LP token Pledge to MasterChef For convenience SU
         emit Deposit(msg.sender, \_pid, \_amount);
     }
 
-withdraw The function is used from MasterChef Extract from Lp Token, The function will first pid To retrieve the corresponding pool , Then according to pid and msg.sender To retrieve the corresponding user Information , Then check user Held by LP tokens Is it greater than the value to extract Lp tokens Number , Then update the pool , Then calculate once pending( Rewards obtained during queue , Because in withdraw and deposits There may be other users accessing , Lead to accSushiPerShare Wait for the change , There will also be rewards at this stage ), Then call safeSushiTransfer Send corresponding quantity SUSHI To msg.sender, Then update the information held by the user LPTokens Number , The incentive liability is then updated , Then call lpToken The contract safeTransfer Function first msg.sender The address to send amout In quantity LP tokens, Then call emit Triggering event .
+withdraw The function is used from MasterChef Extract from Lp Token, The
+function will first pid To retrieve the corresponding pool , Then according to
+pid and msg.sender To retrieve the corresponding user Information , Then check
+user Held by LP tokens Is it greater than the value to extract Lp tokens Number
+, Then update the pool , Then calculate once pending( Rewards obtained during
+queue , Because in withdraw and deposits There may be other users accessing ,
+Lead to accSushiPerShare Wait for the change , There will also be rewards at
+this stage ), Then call safeSushiTransfer Send corresponding quantity SUSHI To
+msg.sender, Then update the information held by the user LPTokens Number , The
+incentive liability is then updated , Then call lpToken The contract
+safeTransfer Function first msg.sender The address to send amout In quantity LP
+tokens, Then call emit Triggering event .
 
     // Withdraw LP tokens from MasterChef.
     function withdraw(uint256 \_pid, uint256 \_amount) public {
@@ -1526,7 +1572,12 @@ withdraw The function is used from MasterChef Extract from Lp Token, The functio
         emit Withdraw(msg.sender, \_pid, \_amount);
     }
 
-emergencyWithdraw For emergency withdrawal , First of all, according to pid Retrieve the corresponding pool , Then according to pid as well as msg.sender Address to retrieve user information , Then call LpToken The contract Safetransfer Function first msg.sender The address to send user.amount In quantity LP tokens, After through emit Triggering event , And update the information held by the user LP tokens Number of awards and liabilities .
+emergencyWithdraw For emergency withdrawal , First of all, according to pid
+Retrieve the corresponding pool , Then according to pid as well as msg.sender
+Address to retrieve user information , Then call LpToken The contract
+Safetransfer Function first msg.sender The address to send user.amount In
+quantity LP tokens, After through emit Triggering event , And update the
+information held by the user LP tokens Number of awards and liabilities .
 
     // Withdraw without caring about rewards. EMERGENCY ONLY.
     function emergencyWithdraw(uint256 \_pid) public {
@@ -1538,7 +1589,8 @@ emergencyWithdraw For emergency withdrawal , First of all, according to pid Retr
         user.rewardDebt = 0;
     }
 
-safeSushiTransfer A function is a simple SUSHI Transfer function , No more details here ：
+safeSushiTransfer A function is a simple SUSHI Transfer function , No more
+details here ：
 
     // Safe sushi transfer function, just in case if rounding error causes pool to not have enough SUSHIs.
     function safeSushiTransfer(address \_to, uint256 \_amount) internal {
@@ -1556,22 +1608,21 @@ MasterChefV2 And MasterChef similar , I won't go into that here ~
 
 ##### **Migrator**
 
-Migrator The role of the contract is mainly to support UniswapV2 Implementation in the pool of protocols LP The migration operation of , Because this part of the code has been carefully explained before , I won't go into that here , If there are questions , You can turn it forward , Here is Migrator Source code ：
+Migrator The role of the contract is mainly to support UniswapV2 Implementation
+in the pool of protocols LP The migration operation of , Because this part of
+the code has been carefully explained before , I won't go into that here , If
+there are questions , You can turn it forward , Here is Migrator Source code ：
 
 // SPDX-License-Identifier: MIT
 
 pragma solidity 0.6.12;
 
-import "./uniswapv2/interfaces/IUniswapV2Pair.sol";
-import "./uniswapv2/interfaces/IUniswapV2Factory.sol";
+import "./uniswapv2/interfaces/IUniswapV2Pair.sol"; import
+"./uniswapv2/interfaces/IUniswapV2Factory.sol";
 
-
-contract Migrator {
-    address public chef;
-    address public oldFactory;
-    IUniswapV2Factory public factory;
-    uint256 public notBeforeBlock;
-    uint256 public desiredLiquidity = uint256(-1);
+contract Migrator { address public chef; address public oldFactory;
+IUniswapV2Factory public factory; uint256 public notBeforeBlock; uint256 public
+desiredLiquidity = uint256(-1);
 
     constructor(
         address \_chef,
@@ -1604,33 +1655,28 @@ contract Migrator {
         desiredLiquidity = uint256(-1);
         return pair;
     }
+
 }
 
 **Ownable**
 
-Ownerable The contract is a supplementary extension contract , Mainly involves owner Initialization and owner Transfer of authority, etc , It's simpler , No more details here , Here is the source code ：
+Ownerable The contract is a supplementary extension contract , Mainly involves
+owner Initialization and owner Transfer of authority, etc , It's simpler , No
+more details here , Here is the source code ：
 
-// SPDX-License-Identifier: MIT
-// Audit on 5-Jan-2021 by Keno and BoringCrypto
+// SPDX-License-Identifier: MIT // Audit on 5-Jan-2021 by Keno and BoringCrypto
 
-// P1 - P3: OK
-pragma solidity 0.6.12;
+// P1 - P3: OK pragma solidity 0.6.12;
 
-// Source: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/access/Ownable.sol + Claimable.sol
-// Edited by BoringCrypto
+// Source:
+https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/access/Ownable.sol +
+Claimable.sol // Edited by BoringCrypto
 
-// T1 - T4: OK
-contract OwnableData {
-    // V1 - V5: OK
-    address public owner;
-    // V1 - V5: OK
-    address public pendingOwner;
-}
+// T1 - T4: OK contract OwnableData { // V1 - V5: OK address public owner; //
+V1 - V5: OK address public pendingOwner; }
 
-// T1 - T4: OK
-contract Ownable is OwnableData {
-    // E1: OK
-    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+// T1 - T4: OK contract Ownable is OwnableData { // E1: OK event
+OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
     constructor () internal {
         owner = msg.sender;
@@ -1673,26 +1719,37 @@ contract Ownable is OwnableData {
         require(msg.sender == owner, "Ownable: caller is not the owner");
         \_;
     }
+
 }
 
 ##### **SushiBar**
 
-SushiBar The main function of the contract is mortgage SUSHI To get more SUSHI, Users can mortgage first Sushi, Then get xSushi In return , Then put it in xSushi In the pool , When the user SushiSwap When trading on the exchange , Will charge 0.3％ The cost of , Of this fee 0.05％ With LP Add as token to SushiBar In the pool , When the award contract is invoked ( At least once a day ), all LP Tokens will be Sushi At the price of ( stay SushiSwap Exchange On ), Then the newly purchased SUSHI Prorated to in pool xSushi holder , It means their xSushi Now the value is higher . at present , Until withdrawal , You can see the increased amount , It was originally 1 individual SUSHI= 1 individual xSushi, But like LP Like tokens ,xSushi The price of will change over time , It depends on how much is in the pool SUSHI Reward , The following is the official source code ：
+SushiBar The main function of the contract is mortgage SUSHI To get more SUSHI,
+Users can mortgage first Sushi, Then get xSushi In return , Then put it in
+xSushi In the pool , When the user SushiSwap When trading on the exchange , Will
+charge 0.3％ The cost of , Of this fee 0.05％ With LP Add as token to SushiBar
+In the pool , When the award contract is invoked ( At least once a day ), all LP
+Tokens will be Sushi At the price of ( stay SushiSwap Exchange On ), Then the
+newly purchased SUSHI Prorated to in pool xSushi holder , It means their xSushi
+Now the value is higher . at present , Until withdrawal , You can see the
+increased amount , It was originally 1 individual SUSHI= 1 individual xSushi,
+But like LP Like tokens ,xSushi The price of will change over time , It depends
+on how much is in the pool SUSHI Reward , The following is the official source
+code ：
 
 // SPDX-License-Identifier: MIT
 
 pragma solidity 0.6.12;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol"; import
+"@openzeppelin/contracts/token/ERC20/ERC20.sol"; import
+"@openzeppelin/contracts/math/SafeMath.sol";
 
-// SushiBar is the coolest bar in town. You come in with some Sushi, and leave with more! The longer you stay, the more Sushi you get.
-//
-// This contract handles swapping to and from xSushi, SushiSwap's staking token.
-contract SushiBar is ERC20("SushiBar", "xSUSHI"){
-    using SafeMath for uint256;
-    IERC20 public sushi;
+// SushiBar is the coolest bar in town. You come in with some Sushi, and leave
+with more! The longer you stay, the more Sushi you get. // // This contract
+handles swapping to and from xSushi, SushiSwap's staking token. contract
+SushiBar is ERC20("SushiBar", "xSUSHI"){ using SafeMath for uint256; IERC20
+public sushi;
 
     // Define the Sushi token contract
     constructor(IERC20 \_sushi) public {
@@ -1709,7 +1766,7 @@ contract SushiBar is ERC20("SushiBar", "xSUSHI"){
         // If no xSushi exists, mint it 1:1 to the amount put in
         if (totalShares == 0 || totalSushi == 0) {
             \_mint(msg.sender, \_amount);
-        } 
+        }
         // Calculate and mint the amount of xSushi the Sushi is worth. The ratio will change overtime, as xSushi is burned/minted and Sushi deposited + gained from fees / withdrawn.
         else {
             uint256 what = \_amount.mul(totalShares).div(totalSushi);
@@ -1729,9 +1786,11 @@ contract SushiBar is ERC20("SushiBar", "xSUSHI"){
         \_burn(msg.sender, \_share);
         sushi.transfer(msg.sender, what);
     }
+
 }
 
-Current contract inherited from ERC20 contract , And an initialization operation is carried out
+Current contract inherited from ERC20 contract , And an initialization operation
+is carried out
 
 contract SushiBar is ERC20("SushiBar", "xSUSHI"){
 
@@ -1742,7 +1801,13 @@ Then initialize... In the constructor SUSHI The address of the contract
         sushi = \_sushi;
     }
 
-there enter Function for locking sushi And casting Xsushi, Here, we will first check the... In the current contract sushi Total amount , Then calculate once xSushi Total amount , If l The total amount of any of the above two is 0, Call \_mint Functions in accordance with the 1:1 Proportional coinage , If neither is 0 Then calculate the additional shares to be issued Xsushi Total amount , And call mint Additional issuance Xsushi, Then call sushi Of transferfrom Function to inject... Into the current contract address sushi：
+there enter Function for locking sushi And casting Xsushi, Here, we will first
+check the... In the current contract sushi Total amount , Then calculate once
+xSushi Total amount , If l The total amount of any of the above two is 0, Call
+\_mint Functions in accordance with the 1:1 Proportional coinage , If neither is
+0 Then calculate the additional shares to be issued Xsushi Total amount , And
+call mint Additional issuance Xsushi, Then call sushi Of transferfrom Function
+to inject... Into the current contract address sushi：
 
     // Enter the bar. Pay some SUSHIs. Earn some shares.
     // Locks Sushi and mints xSushi
@@ -1754,7 +1819,7 @@ there enter Function for locking sushi And casting Xsushi, Here, we will first c
         // If no xSushi exists, mint it 1:1 to the amount put in
         if (totalShares == 0 || totalSushi == 0) {
             \_mint(msg.sender, \_amount);
-        } 
+        }
         // Calculate and mint the amount of xSushi the Sushi is worth. The ratio will change overtime, as xSushi is burned/minted and Sushi deposited + gained from fees / withdrawn.
         else {
             uint256 what = \_amount.mul(totalShares).div(totalSushi);
@@ -1764,7 +1829,10 @@ there enter Function for locking sushi And casting Xsushi, Here, we will first c
         sushi.transferFrom(msg.sender, address(this), \_amount);
     }
 
-there leave Function to unlock and extract Sushi And destroy Xsushi, The function is completely opposite to the function above , Here we first calculate xSushi Total amount , Then calculate the current xSushi How much can it be worth Sushi, And then destroy xSushi And extract Sushi
+there leave Function to unlock and extract Sushi And destroy Xsushi, The
+function is completely opposite to the function above , Here we first calculate
+xSushi Total amount , Then calculate the current xSushi How much can it be worth
+Sushi, And then destroy xSushi And extract Sushi
 
     // Leave the bar. Claim back your SUSHIs.
     // Unlocks the staked + gained Sushi and burns xSushi
@@ -1779,28 +1847,26 @@ there leave Function to unlock and extract Sushi And destroy Xsushi, The functio
 
 ##### **SushiMaker**
 
-SushiMaker Role conversion of contract Token by SUSHI And send it to SushiBar, The official source code is as follows ：
+SushiMaker Role conversion of contract Token by SUSHI And send it to SushiBar,
+The official source code is as follows ：
 
 // SPDX-License-Identifier: MIT
 
-// P1 - P3: OK
-pragma solidity 0.6.12;
-import "./libraries/SafeMath.sol";
-import "./libraries/SafeERC20.sol";
+// P1 - P3: OK pragma solidity 0.6.12; import "./libraries/SafeMath.sol"; import
+"./libraries/SafeERC20.sol";
 
-import "./uniswapv2/interfaces/IUniswapV2ERC20.sol";
-import "./uniswapv2/interfaces/IUniswapV2Pair.sol";
-import "./uniswapv2/interfaces/IUniswapV2Factory.sol";
+import "./uniswapv2/interfaces/IUniswapV2ERC20.sol"; import
+"./uniswapv2/interfaces/IUniswapV2Pair.sol"; import
+"./uniswapv2/interfaces/IUniswapV2Factory.sol";
 
 import "./Ownable.sol";
 
-// SushiMaker is MasterChef's left hand and kinda a wizard. He can cook up Sushi from pretty much anything!
-// This contract handles "serving up" rewards for xSushi holders by trading tokens collected from fees for Sushi.
+// SushiMaker is MasterChef's left hand and kinda a wizard. He can cook up Sushi
+from pretty much anything! // This contract handles "serving up" rewards for
+xSushi holders by trading tokens collected from fees for Sushi.
 
-// T1 - T4: OK
-contract SushiMaker is Ownable {
-    using SafeMath for uint256;
-    using SafeERC20 for IERC20;
+// T1 - T4: OK contract SushiMaker is Ownable { using SafeMath for uint256;
+using SafeERC20 for IERC20;
 
     // V1 - V5: OK
     IUniswapV2Factory public immutable factory;
@@ -1890,13 +1956,10 @@ contract SushiMaker is Ownable {
     function convertMultiple(
         address\[\] calldata token0,
         address\[\] calldata token1
-) external onlyEOA() {
-        // TODO: This can be optimized a fair bit, but this is safer and simpler for now
-        uint256 len = token0.length;
-        for (uint256 i = 0; i < len; i++) {
-            \_convert(token0\[i\], token1\[i\]);
-        }
-    }
+
+) external onlyEOA() { // TODO: This can be optimized a fair bit, but this is
+safer and simpler for now uint256 len = token0.length; for (uint256 i = 0; i <
+len; i++) { \_convert(token0\[i\], token1\[i\]); } }
 
     // F1 - F10: OK
     // C1- C24: OK
@@ -1934,70 +1997,29 @@ contract SushiMaker is Ownable {
         address token1,
         uint256 amount0,
         uint256 amount1
-) internal returns (uint256 sushiOut) {
-        // Interactions
-        if (token0 == token1) {
-            uint256 amount = amount0.add(amount1);
-            if (token0 == sushi) {
-                IERC20(sushi).safeTransfer(bar, amount);
-                sushiOut = amount;
-            } else if (token0 == weth) {
-                sushiOut = \_toSUSHI(weth, amount);
-            } else {
-                address bridge = bridgeFor(token0);
-                amount = \_swap(token0, bridge, amount, address(this));
-                sushiOut = \_convertStep(bridge, bridge, amount, 0);
-            }
-        } else if (token0 == sushi) {
-            // eg. SUSHI - ETH
-            IERC20(sushi).safeTransfer(bar, amount0);
-            sushiOut = \_toSUSHI(token1, amount1).add(amount0);
-        } else if (token1 == sushi) {
-            // eg. USDT - SUSHI
-            IERC20(sushi).safeTransfer(bar, amount1);
-            sushiOut = \_toSUSHI(token0, amount0).add(amount1);
-        } else if (token0 == weth) {
-            // eg. ETH - USDC
-            sushiOut = \_toSUSHI(
-                weth,
-                \_swap(token1, weth, amount1, address(this)).add(amount0)
-            );
-        } else if (token1 == weth) {
-            // eg. USDT - ETH
-            sushiOut = \_toSUSHI(
-                weth,
-                \_swap(token0, weth, amount0, address(this)).add(amount1)
-            );
-        } else {
-            // eg. MIC - USDT
-            address bridge0 = bridgeFor(token0);
-            address bridge1 = bridgeFor(token1);
-            if (bridge0 == token1) {
-                // eg. MIC - USDT - and bridgeFor(MIC) = USDT
-                sushiOut = \_convertStep(
-                    bridge0,
-                    token1,
-                    \_swap(token0, bridge0, amount0, address(this)),
-                    amount1
-                );
-            } else if (bridge1 == token0) {
-                // eg. WBTC - DSD - and bridgeFor(DSD) = WBTC
-                sushiOut = \_convertStep(
-                    token0,
-                    bridge1,
-                    amount0,
-                    \_swap(token1, bridge1, amount1, address(this))
-                );
-            } else {
-                sushiOut = \_convertStep(
-                    bridge0,
-                    bridge1, // eg. USDT - DSD - and bridgeFor(DSD) = WBTC
-                    \_swap(token0, bridge0, amount0, address(this)),
-                    \_swap(token1, bridge1, amount1, address(this))
-                );
-            }
-        }
-    }
+
+) internal returns (uint256 sushiOut) { // Interactions if (token0 == token1) {
+uint256 amount = amount0.add(amount1); if (token0 == sushi) {
+IERC20(sushi).safeTransfer(bar, amount); sushiOut = amount; } else if (token0 ==
+weth) { sushiOut = \_toSUSHI(weth, amount); } else { address bridge =
+bridgeFor(token0); amount = \_swap(token0, bridge, amount, address(this));
+sushiOut = \_convertStep(bridge, bridge, amount, 0); } } else if (token0 ==
+sushi) { // eg. SUSHI - ETH IERC20(sushi).safeTransfer(bar, amount0); sushiOut =
+\_toSUSHI(token1, amount1).add(amount0); } else if (token1 == sushi) { // eg.
+USDT - SUSHI IERC20(sushi).safeTransfer(bar, amount1); sushiOut =
+\_toSUSHI(token0, amount0).add(amount1); } else if (token0 == weth) { // eg.
+ETH - USDC sushiOut = \_toSUSHI( weth, \_swap(token1, weth, amount1,
+address(this)).add(amount0) ); } else if (token1 == weth) { // eg. USDT - ETH
+sushiOut = \_toSUSHI( weth, \_swap(token0, weth, amount0,
+address(this)).add(amount1) ); } else { // eg. MIC - USDT address bridge0 =
+bridgeFor(token0); address bridge1 = bridgeFor(token1); if (bridge0 == token1) {
+// eg. MIC - USDT - and bridgeFor(MIC) = USDT sushiOut = \_convertStep( bridge0,
+token1, \_swap(token0, bridge0, amount0, address(this)), amount1 ); } else if
+(bridge1 == token0) { // eg. WBTC - DSD - and bridgeFor(DSD) = WBTC sushiOut =
+\_convertStep( token0, bridge1, amount0, \_swap(token1, bridge1, amount1,
+address(this)) ); } else { sushiOut = \_convertStep( bridge0, bridge1, // eg.
+USDT - DSD - and bridgeFor(DSD) = WBTC \_swap(token0, bridge0, amount0,
+address(this)), \_swap(token1, bridge1, amount1, address(this)) ); } } }
 
     // F1 - F10: OK
     // C1 - C24: OK
@@ -2007,12 +2029,10 @@ contract SushiMaker is Ownable {
         address toToken,
         uint256 amountIn,
         address to
-) internal returns (uint256 amountOut) {
-        // Checks
-        // X1 - X5: OK
-        IUniswapV2Pair pair =
-            IUniswapV2Pair(factory.getPair(fromToken, toToken));
-        require(address(pair) != address(0), "SushiMaker: Cannot convert");
+
+) internal returns (uint256 amountOut) { // Checks // X1 - X5: OK IUniswapV2Pair
+pair = IUniswapV2Pair(factory.getPair(fromToken, toToken));
+require(address(pair) != address(0), "SushiMaker: Cannot convert");
 
         // Interactions
         // X1 - X5: OK
@@ -2040,13 +2060,12 @@ contract SushiMaker is Ownable {
     function \_toSUSHI(address token, uint256 amountIn)
         internal
         returns (uint256 amountOut)
-{
-        // X1 - X5: OK
-        amountOut = \_swap(token, sushi, amountIn, bar);
-    }
-}
 
-The constructor here directly initializes UniswapV2 Address of factory contract 、bar The address of the contract 、SUSHI The address of the contract 、WETH The address of the contract ：
+{ // X1 - X5: OK amountOut = \_swap(token, sushi, amountIn, bar); } }
+
+The constructor here directly initializes UniswapV2 Address of factory contract
+、bar The address of the contract 、SUSHI The address of the contract 、WETH The
+address of the contract ：
 
     constructor(
         address \_factory,
@@ -2060,7 +2079,8 @@ The constructor here directly initializes UniswapV2 Address of factory contract 
         weth = \_weth;
     }
 
-bridgeFor Function to retrieve a token The bridge , If not set, the default is WETH：
+bridgeFor Function to retrieve a token The bridge , If not set, the default is
+WETH：
 
     // F1 - F10: OK
     // C1 - C24: OK
@@ -2145,84 +2165,34 @@ Conversion between two tokens ：
         address token1,
         uint256 amount0,
         uint256 amount1
-) internal returns (uint256 sushiOut) {
-        // Interactions
-        if (token0 == token1) {
-            uint256 amount = amount0.add(amount1);
-            if (token0 == sushi) {
-                IERC20(sushi).safeTransfer(bar, amount);
-                sushiOut = amount;
-            } else if (token0 == weth) {
-                sushiOut = \_toSUSHI(weth, amount);
-            } else {
-                address bridge = bridgeFor(token0);
-                amount = \_swap(token0, bridge, amount, address(this));
-                sushiOut = \_convertStep(bridge, bridge, amount, 0);
-            }
-        } else if (token0 == sushi) {
-            // eg. SUSHI - ETH
-            IERC20(sushi).safeTransfer(bar, amount0);
-            sushiOut = \_toSUSHI(token1, amount1).add(amount0);
-        } else if (token1 == sushi) {
-            // eg. USDT - SUSHI
-            IERC20(sushi).safeTransfer(bar, amount1);
-            sushiOut = \_toSUSHI(token0, amount0).add(amount1);
-        } else if (token0 == weth) {
-            // eg. ETH - USDC
-            sushiOut = \_toSUSHI(
-                weth,
-                \_swap(token1, weth, amount1, address(this)).add(amount0)
-            );
-        } else if (token1 == weth) {
-            // eg. USDT - ETH
-            sushiOut = \_toSUSHI(
-                weth,
-                \_swap(token0, weth, amount0, address(this)).add(amount1)
-            );
-        } else {
-            // eg. MIC - USDT
-            address bridge0 = bridgeFor(token0);
-            address bridge1 = bridgeFor(token1);
-            if (bridge0 == token1) {
-                // eg. MIC - USDT - and bridgeFor(MIC) = USDT
-                sushiOut = \_convertStep(
-                    bridge0,
-                    token1,
-                    \_swap(token0, bridge0, amount0, address(this)),
-                    amount1
-                );
-            } else if (bridge1 == token0) {
-                // eg. WBTC - DSD - and bridgeFor(DSD) = WBTC
-                sushiOut = \_convertStep(
-                    token0,
-                    bridge1,
-                    amount0,
-                    \_swap(token1, bridge1, amount1, address(this))
-                );
-            } else {
-                sushiOut = \_convertStep(
-                    bridge0,
-                    bridge1, // eg. USDT - DSD - and bridgeFor(DSD) = WBTC
-                    \_swap(token0, bridge0, amount0, address(this)),
-                    \_swap(token1, bridge1, amount1, address(this))
-                );
-            }
-        }
-    }
-    // F1 - F10: OK
-    // C1 - C24: OK
-    // All safeTransfer, swap: X1 - X5: OK
-    function \_swap(
-        address fromToken,
-        address toToken,
-        uint256 amountIn,
-        address to
-) internal returns (uint256 amountOut) {
-        // Checks
-        // X1 - X5: OK
-        IUniswapV2Pair pair =
-            IUniswapV2Pair(factory.getPair(fromToken, toToken));
-        require(address(pair) != address(0), "SushiMaker: Cannot convert");
+
+) internal returns (uint256 sushiOut) { // Interactions if (token0 == token1) {
+uint256 amount = amount0.add(amount1); if (token0 == sushi) {
+IERC20(sushi).safeTransfer(bar, amount); sushiOut = amount; } else if (token0 ==
+weth) { sushiOut = \_toSUSHI(weth, amount); } else { address bridge =
+bridgeFor(token0); amount = \_swap(token0, bridge, amount, address(this));
+sushiOut = \_convertStep(bridge, bridge, amount, 0); } } else if (token0 ==
+sushi) { // eg. SUSHI - ETH IERC20(sushi).safeTransfer(bar, amount0); sushiOut =
+\_toSUSHI(token1, amount1).add(amount0); } else if (token1 == sushi) { // eg.
+USDT - SUSHI IERC20(sushi).safeTransfer(bar, amount1); sushiOut =
+\_toSUSHI(token0, amount0).add(amount1); } else if (token0 == weth) { // eg.
+ETH - USDC sushiOut = \_toSUSHI( weth, \_swap(token1, weth, amount1,
+address(this)).add(amount0) ); } else if (token1 == weth) { // eg. USDT - ETH
+sushiOut = \_toSUSHI( weth, \_swap(token0, weth, amount0,
+address(this)).add(amount1) ); } else { // eg. MIC - USDT address bridge0 =
+bridgeFor(token0); address bridge1 = bridgeFor(token1); if (bridge0 == token1) {
+// eg. MIC - USDT - and bridgeFor(MIC) = USDT sushiOut = \_convertStep( bridge0,
+token1, \_swap(token0, bridge0, amount0, address(this)), amount1 ); } else if
+(bridge1 == token0) { // eg. WBTC - DSD - and bridgeFor(DSD) = WBTC sushiOut =
+\_convertStep( token0, bridge1, amount0, \_swap(token1, bridge1, amount1,
+address(this)) ); } else { sushiOut = \_convertStep( bridge0, bridge1, // eg.
+USDT - DSD - and bridgeFor(DSD) = WBTC \_swap(token0, bridge0, amount0,
+address(this)), \_swap(token1, bridge1, amount1, address(this)) ); } } } // F1 -
+F10: OK // C1 - C24: OK // All safeTransfer, swap: X1 - X5: OK function \_swap(
+address fromToken, address toToken, uint256 amountIn, address to ) internal
+returns (uint256 amountOut) { // Checks // X1 - X5: OK IUniswapV2Pair pair =
+IUniswapV2Pair(factory.getPair(fromToken, toToken)); require(address(pair) !=
+address(0), "SushiMaker: Cannot convert");
 
         // Interactions
         // X1 - X5: OK
@@ -2249,29 +2219,27 @@ Conversion between two tokens ：
     function \_toSUSHI(address token, uint256 amountIn)
         internal
         returns (uint256 amountOut)
-{
-        // X1 - X5: OK
-        amountOut = \_swap(token, sushi, amountIn, bar);
-    }
+
+{ // X1 - X5: OK amountOut = \_swap(token, sushi, amountIn, bar); }
 
 ##### **SushiRoll**
 
-SushiRoll Help you transfer existing Uniswap LP Token migration to SushiSwap LP token , The official source code is shown below ：
+SushiRoll Help you transfer existing Uniswap LP Token migration to SushiSwap LP
+token , The official source code is shown below ：
 
 // SPDX-License-Identifier: MIT
 
 pragma solidity 0.6.12;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "./uniswapv2/interfaces/IUniswapV2Pair.sol";
-import "./uniswapv2/interfaces/IUniswapV2Router01.sol";
-import "./uniswapv2/interfaces/IUniswapV2Factory.sol";
-import "./uniswapv2/libraries/UniswapV2Library.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol"; import
+"@openzeppelin/contracts/token/ERC20/SafeERC20.sol"; import
+"./uniswapv2/interfaces/IUniswapV2Pair.sol"; import
+"./uniswapv2/interfaces/IUniswapV2Router01.sol"; import
+"./uniswapv2/interfaces/IUniswapV2Factory.sol"; import
+"./uniswapv2/libraries/UniswapV2Library.sol";
 
-// SushiRoll helps your migrate your existing Uniswap LP tokens to SushiSwap LP ones
-contract SushiRoll {
-    using SafeERC20 for IERC20;
+// SushiRoll helps your migrate your existing Uniswap LP tokens to SushiSwap LP
+ones contract SushiRoll { using SafeERC20 for IERC20;
 
     IUniswapV2Router01 public oldRouter;
     IUniswapV2Router01 public router;
@@ -2291,9 +2259,9 @@ contract SushiRoll {
         uint8 v,
         bytes32 r,
         bytes32 s
-) public {
-        IUniswapV2Pair pair = IUniswapV2Pair(pairForOldRouter(tokenA, tokenB));
-        pair.permit(msg.sender, address(this), liquidity, deadline, v, r, s);
+
+) public { IUniswapV2Pair pair = IUniswapV2Pair(pairForOldRouter(tokenA,
+tokenB)); pair.permit(msg.sender, address(this), liquidity, deadline, v, r, s);
 
         migrate(tokenA, tokenB, liquidity, amountAMin, amountBMin, deadline);
     }
@@ -2306,8 +2274,8 @@ contract SushiRoll {
         uint256 amountAMin,
         uint256 amountBMin,
         uint256 deadline
-) public {
-        require(deadline >= block.timestamp, 'SushiSwap: EXPIRED');
+
+) public { require(deadline >= block.timestamp, 'SushiSwap: EXPIRED');
 
         // Remove liquidity from the old router with permit
         (uint256 amountA, uint256 amountB) = removeLiquidity(
@@ -2338,15 +2306,15 @@ contract SushiRoll {
         uint256 amountAMin,
         uint256 amountBMin,
         uint256 deadline
-) internal returns (uint256 amountA, uint256 amountB) {
-        IUniswapV2Pair pair = IUniswapV2Pair(pairForOldRouter(tokenA, tokenB));
-        pair.transferFrom(msg.sender, address(pair), liquidity);
-        (uint256 amount0, uint256 amount1) = pair.burn(address(this));
-        (address token0,) = UniswapV2Library.sortTokens(tokenA, tokenB);
-        (amountA, amountB) = tokenA == token0 ? (amount0, amount1) : (amount1, amount0);
-        require(amountA >= amountAMin, 'SushiRoll: INSUFFICIENT\_A\_AMOUNT');
-        require(amountB >= amountBMin, 'SushiRoll: INSUFFICIENT\_B\_AMOUNT');
-    }
+
+) internal returns (uint256 amountA, uint256 amountB) { IUniswapV2Pair pair =
+IUniswapV2Pair(pairForOldRouter(tokenA, tokenB)); pair.transferFrom(msg.sender,
+address(pair), liquidity); (uint256 amount0, uint256 amount1) =
+pair.burn(address(this)); (address token0,) =
+UniswapV2Library.sortTokens(tokenA, tokenB); (amountA, amountB) = tokenA ==
+token0 ? (amount0, amount1) : (amount1, amount0); require(amountA >= amountAMin,
+'SushiRoll: INSUFFICIENT_A_AMOUNT'); require(amountB >= amountBMin, 'SushiRoll:
+INSUFFICIENT_B_AMOUNT'); }
 
     // calculates the CREATE2 address for a pair without making any external calls
     function pairForOldRouter(address tokenA, address tokenB) internal view returns (address pair) {
@@ -2364,49 +2332,43 @@ contract SushiRoll {
         address tokenB,
         uint256 amountADesired,
         uint256 amountBDesired
-) internal returns (uint amountA, uint amountB) {
-        (amountA, amountB) = \_addLiquidity(tokenA, tokenB, amountADesired, amountBDesired);
-        address pair = UniswapV2Library.pairFor(router.factory(), tokenA, tokenB);
-        IERC20(tokenA).safeTransfer(pair, amountA);
-        IERC20(tokenB).safeTransfer(pair, amountB);
-        IUniswapV2Pair(pair).mint(msg.sender);
-    }
+
+) internal returns (uint amountA, uint amountB) { (amountA, amountB) =
+\_addLiquidity(tokenA, tokenB, amountADesired, amountBDesired); address pair =
+UniswapV2Library.pairFor(router.factory(), tokenA, tokenB);
+IERC20(tokenA).safeTransfer(pair, amountA); IERC20(tokenB).safeTransfer(pair,
+amountB); IUniswapV2Pair(pair).mint(msg.sender); }
 
     function \_addLiquidity(
         address tokenA,
         address tokenB,
         uint256 amountADesired,
         uint256 amountBDesired
-) internal returns (uint256 amountA, uint256 amountB) {
-        // create the pair if it doesn't exist yet
-        IUniswapV2Factory factory = IUniswapV2Factory(router.factory());
-        if (factory.getPair(tokenA, tokenB) == address(0)) {
-            factory.createPair(tokenA, tokenB);
-        }
-        (uint256 reserveA, uint256 reserveB) = UniswapV2Library.getReserves(address(factory), tokenA, tokenB);
-        if (reserveA == 0 && reserveB == 0) {
-            (amountA, amountB) = (amountADesired, amountBDesired);
-        } else {
-            uint256 amountBOptimal = UniswapV2Library.quote(amountADesired, reserveA, reserveB);
-            if (amountBOptimal <= amountBDesired) {
-                (amountA, amountB) = (amountADesired, amountBOptimal);
-            } else {
-                uint256 amountAOptimal = UniswapV2Library.quote(amountBDesired, reserveB, reserveA);
-                assert(amountAOptimal <= amountADesired);
-                (amountA, amountB) = (amountAOptimal, amountBDesired);
-            }
-        }
-    }
-}
 
-Constructor initializes the old UniswapV2Router Address and new UniswapV2Router Address ：
+) internal returns (uint256 amountA, uint256 amountB) { // create the pair if it
+doesn't exist yet IUniswapV2Factory factory =
+IUniswapV2Factory(router.factory()); if (factory.getPair(tokenA, tokenB) ==
+address(0)) { factory.createPair(tokenA, tokenB); } (uint256 reserveA, uint256
+reserveB) = UniswapV2Library.getReserves(address(factory), tokenA, tokenB); if
+(reserveA == 0 && reserveB == 0) { (amountA, amountB) = (amountADesired,
+amountBDesired); } else { uint256 amountBOptimal =
+UniswapV2Library.quote(amountADesired, reserveA, reserveB); if (amountBOptimal
+<= amountBDesired) { (amountA, amountB) = (amountADesired, amountBOptimal); }
+else { uint256 amountAOptimal = UniswapV2Library.quote(amountBDesired, reserveB,
+reserveA); assert(amountAOptimal <= amountADesired); (amountA, amountB) =
+(amountAOptimal, amountBDesired); } } } }
+
+Constructor initializes the old UniswapV2Router Address and new UniswapV2Router
+Address ：
 
     constructor(IUniswapV2Router01 \_oldRouter, IUniswapV2Router01 \_router) public {
         oldRouter = \_oldRouter;
         router = \_router;
     }
 
-migrateWithPermit Function to retrieve whether a transaction pair exists , Then call the transaction to the contract. permit Function to perform authorization operations , Last call migrate Migration ：
+migrateWithPermit Function to retrieve whether a transaction pair exists , Then
+call the transaction to the contract. permit Function to perform authorization
+operations , Last call migrate Migration ：
 
     function migrateWithPermit(
         address tokenA,
@@ -2458,7 +2420,13 @@ migrateWithPermit Function to retrieve whether a transaction pair exists , Then 
         }
     }
 
-removeLiquidity Used to remove liquidity , After that, the liquidity token to be burned is transferred back to the transaction to the contract , Then the transaction pair is called. burn The function burns the liquidity tokens that fall in , Then extract the corresponding two tokens to the receiver , Then sort it out , Then perform the assignment operation , Then check whether the extracted corresponding token is greater than the minimum number of extracted tokens ：
+removeLiquidity Used to remove liquidity , After that, the liquidity token to be
+burned is transferred back to the transaction to the contract , Then the
+transaction pair is called. burn The function burns the liquidity tokens that
+fall in , Then extract the corresponding two tokens to the receiver , Then sort
+it out , Then perform the assignment operation , Then check whether the
+extracted corresponding token is greater than the minimum number of extracted
+tokens ：
 
     function removeLiquidity(
         address tokenA,
@@ -2467,25 +2435,24 @@ removeLiquidity Used to remove liquidity , After that, the liquidity token to be
         uint256 amountAMin,
         uint256 amountBMin,
         uint256 deadline
-) internal returns (uint256 amountA, uint256 amountB) {
-        IUniswapV2Pair pair = IUniswapV2Pair(pairForOldRouter(tokenA, tokenB));
-        pair.transferFrom(msg.sender, address(pair), liquidity);
-        (uint256 amount0, uint256 amount1) = pair.burn(address(this));
-        (address token0,) = UniswapV2Library.sortTokens(tokenA, tokenB);
-        (amountA, amountB) = tokenA == token0 ? (amount0, amount1) : (amount1, amount0);
-        require(amountA >= amountAMin, 'SushiRoll: INSUFFICIENT\_A\_AMOUNT');
-        require(amountB >= amountBMin, 'SushiRoll: INSUFFICIENT\_B\_AMOUNT');
-    }
 
-  // UniswapV2Pair.sol
-    // this low-level function should be called from a contract which performs important safety checks
-    function burn(address to) external lock returns (uint amount0, uint amount1) {
-        (uint112 \_reserve0, uint112 \_reserve1,) = getReserves(); // gas savings
-        address \_token0 = token0;                                // gas savings
-        address \_token1 = token1;                                // gas savings
-        uint balance0 = IERC20Uniswap(\_token0).balanceOf(address(this));
-        uint balance1 = IERC20Uniswap(\_token1).balanceOf(address(this));
-        uint liquidity = balanceOf\[address(this)\];
+) internal returns (uint256 amountA, uint256 amountB) { IUniswapV2Pair pair =
+IUniswapV2Pair(pairForOldRouter(tokenA, tokenB)); pair.transferFrom(msg.sender,
+address(pair), liquidity); (uint256 amount0, uint256 amount1) =
+pair.burn(address(this)); (address token0,) =
+UniswapV2Library.sortTokens(tokenA, tokenB); (amountA, amountB) = tokenA ==
+token0 ? (amount0, amount1) : (amount1, amount0); require(amountA >= amountAMin,
+'SushiRoll: INSUFFICIENT_A_AMOUNT'); require(amountB >= amountBMin, 'SushiRoll:
+INSUFFICIENT_B_AMOUNT'); }
+
+// UniswapV2Pair.sol // this low-level function should be called from a contract
+which performs important safety checks function burn(address to) external lock
+returns (uint amount0, uint amount1) { (uint112 \_reserve0, uint112 \_reserve1,)
+= getReserves(); // gas savings address \_token0 = token0; // gas savings
+address \_token1 = token1; // gas savings uint balance0 =
+IERC20Uniswap(\_token0).balanceOf(address(this)); uint balance1 =
+IERC20Uniswap(\_token1).balanceOf(address(this)); uint liquidity =
+balanceOf\[address(this)\];
 
         bool feeOn = \_mintFee(\_reserve0, \_reserve1);
         uint \_totalSupply = totalSupply; // gas savings, must be defined here since totalSupply can update in \_mintFee
@@ -2503,7 +2470,8 @@ removeLiquidity Used to remove liquidity , After that, the liquidity token to be
         emit Burn(msg.sender, amount0, amount1, to);
     }
 
-pairForOldRouter Used to calculate the of a pair without any external calls CREATE2 Address
+pairForOldRouter Used to calculate the of a pair without any external calls
+CREATE2 Address
 
     // calculates the CREATE2 address for a pair without making any external calls
     function pairForOldRouter(address tokenA, address tokenB) internal view returns (address pair) {
@@ -2514,7 +2482,6 @@ pairForOldRouter Used to calculate the of a pair without any external calls CREA
                 keccak256(abi.encodePacked(token0, token1)),
                 hex'96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f' // init code hash
             ))));
-    
 
 addLiquidity Used to increase liquidity ：
 
@@ -2556,11 +2523,13 @@ addLiquidity Used to increase liquidity ：
             }
         }
     }
+
 }
 
 #### **safety problem**
 
-Here we're going to look at the above SushiSwap Two security issues in the contract are briefly analyzed ：
+Here we're going to look at the above SushiSwap Two security issues in the
+contract are briefly analyzed ：
 
 ##### **Conditional competition**
 
@@ -2578,19 +2547,17 @@ Vulnerability code ：
         user.rewardDebt = 0;
     }
 
-Vulnerability description ： As described in the code above , there emergencyWithdraw Function for emergency withdrawal , But the renewal of assets is after the transfer , Lead to conditional competition .
+Vulnerability description ： As described in the code above , there
+emergencyWithdraw Function for emergency withdrawal , But the renewal of assets
+is after the transfer , Lead to conditional competition .
 
 Solution ： The correct wording should be as follows
 
- function emergencyWithdraw(uint256 \_pid) public {
-        PoolInfo storage pool = poolInfo\[\_pid\];
-        UserInfo storage user = userInfo\[\_pid\]\[msg.sender\];
-        uint256 amount = user.amount;
-        user.amount = 0;
-        user.rewardDebt = 0;
-        pool.lpToken.safeTransfer(address(msg.sender), amount);
-        emit EmergencyWithdraw(msg.sender, \_pid, amount);
-    }
+function emergencyWithdraw(uint256 \_pid) public { PoolInfo storage pool =
+poolInfo\[\_pid\]; UserInfo storage user = userInfo\[\_pid\]\[msg.sender\];
+uint256 amount = user.amount; user.amount = 0; user.rewardDebt = 0;
+pool.lpToken.safeTransfer(address(msg.sender), amount); emit
+EmergencyWithdraw(msg.sender, \_pid, amount); }
 
 ##### **Reenter attack**
 
@@ -2615,13 +2582,28 @@ Vulnerability code ：
         pool.lpToken = newLpToken;
     }
 
-Vulnerability description ： In the above code, you can see the contract owner You can set migrator, When migrator After the value of is determined migrator.migrate(lpToken) Can be determined accordingly , because migrate The way is through IMigratorChef Interface to be called , So when called ,migrate The logical code in the method will be based on migrator Values vary , At this point, if the smart contract owner take migrator The value of points to a containing malicious migrate Smart contract for method code , Then the owner can do any malicious operation he wants , It's even possible to empty all the tokens in the account , At the same time migrator.migrate(lpToken) After this line of code is executed , Contract owners can also exploit reentry attacks , Re execute from migrate Methods or other smart contract methods , Perform malicious operations .
+Vulnerability description ： In the above code, you can see the contract owner
+You can set migrator, When migrator After the value of is determined
+migrator.migrate(lpToken) Can be determined accordingly , because migrate The
+way is through IMigratorChef Interface to be called , So when called ,migrate
+The logical code in the method will be based on migrator Values vary , At this
+point, if the smart contract owner take migrator The value of points to a
+containing malicious migrate Smart contract for method code , Then the owner can
+do any malicious operation he wants , It's even possible to empty all the tokens
+in the account , At the same time migrator.migrate(lpToken) After this line of
+code is executed , Contract owners can also exploit reentry attacks , Re execute
+from migrate Methods or other smart contract methods , Perform malicious
+operations .
 
 Solution ： Setting up reasonable owner Authority
 
 #### **Summary at the end of the paper**
 
-SushiSwap Is in UniswapV2 Based on the agreement , Because its emergency reward model is more biased towards the interests of users , So compared with UniswapV2 It is easier to attract more users to participate in pledge to provide liquidity , At the same time, this article also reveals the problem of permission 、 Security risks exposed by coding logic design .
+SushiSwap Is in UniswapV2 Based on the agreement , Because its emergency reward
+model is more biased towards the interests of users , So compared with UniswapV2
+It is easier to attract more users to participate in pledge to provide liquidity
+, At the same time, this article also reveals the problem of permission 、
+Security risks exposed by coding logic design .
 
 #### **Reference link**
 
