@@ -1,6 +1,7 @@
 {
-  "name": "@primitives/blog",
-  "version": "0.0.1",
+  "name": "primitives-blog",
+  "private": true,
+  "version": "0.0.2",
   "description": "ethereum and engineering blog",
   "files": [
     "*"

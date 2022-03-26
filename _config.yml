@@ -3,8 +3,9 @@ title: Primitives
 description: Engineering Blog
 header_img: /assets/img/home.jpeg
 baseurl: /primitives
-owner: sambacha
+owner: manifoldfinance
 published_at: 2021
+repository: manifoldfinance/primitives
 
 # Sidebar settings
 sidebar: true
@@ -13,14 +14,14 @@ sidebar_about_description: 0xJanitor
 
 RSS: true
 email: sam@manifoldfinance.com
-github_username: sambacha
+github_username: manifoldfinance
 
 # Google Analytics settings (https://analytics.google.com/)
 ga_measurement_id:
 
 # Comments settings (https://utteranc.es/)
 # You must use your own repository, otherwise it won't work.
-comments_repository: sambacha/comments
+comments_repository: manifoldfinance/comments
 
 # Build settings
 paginate: 10
