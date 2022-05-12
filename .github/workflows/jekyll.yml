@@ -3,7 +3,7 @@ name: jekyll
 on:
   push:
     branches:
-      - main # or master before October 2020
+      - master # or master before October 2020
 
 jobs:
   jekyll:
