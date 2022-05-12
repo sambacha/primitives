@@ -1,8 +1,28 @@
 ---
 title: ' The Mythical Web3 Developer Experience'
-excerpt: ''
+version: 2022.05.10
+excerpt: 'Integrating OpenMEV into Sushiswap's Web3 DApp'
+author: @aldoborrero (Aldo Borrero), @sambacha (Sam Bacha);
 ---
 # The Mythical Web3 Developer Experience
+
+[TOC]
+- [The Mythical Web3 Developer Experience](#the-mythical-web3-developer-experience)
+  * [Introduction](#introduction)
+  * [What is the base implementation](#what-is-the-base-implementation)
+  * [MetaMask](#metamask)
+    + [Current flow](#current-flow)
+    + [Previous Solution: Trick MetaMask checks for Network Id](#previous-solution--trick-metamask-checks-for-network-id)
+    + [Alternative Solution: Sign the tx ourselves](#alternative-solution--sign-the-tx-ourselves)
+  * [WalletConnect](#walletconnect)
+    + [Current flow](#current-flow-1)
+    + [Alternative Approach: Sign the tx ourselves](#alternative-approach--sign-the-tx-ourselves)
+  * [Conclusions](#conclusions)
+  * [Once more unto the breach](#once-more-unto-the-breach)
+  * [How Sushi's is handling connectors](#how-sushi-s-is-handling-connectors)
+  * [The issue with `eth_sign`, `personal_sign` and `signedTypeData_v4`](#the-issue-with--eth-sign----personal-sign--and--signedtypedata-v4-)
+  * [Where does this leave us right now?](#where-does-this-leave-us-right-now-)
+
 
 > Engineering UX hurdles encountered in Web3 
 
@@ -30,7 +50,11 @@ In a perfect world, ideally in Sushi's front-end, we would like to change the RP
 
 Theoretically, by just changing the RPC provider for the networks we are interested in, all transactions should be routed to that defined RPC endpoint... but it's not the case, as we all already know. So changing this value will only make the UI request generic information like the current block number and several batched calls.
 
-The code that is responsible of doing that in Sushi's is the implementation of `NetworkConnector` and `MiniRpcProvider`:
+The code that is responsible for doing that in Sushi's is the implementation of `NetworkConnector` and `MiniRpcProvider`:
+
+> UPDATE (2022.05.07): This entire RPC Module was replaced, you can find the extracted code here: https://github.com/manifoldfinance/libsushi
+
+
 
 ![image](https://user-images.githubusercontent.com/82811/146026549-8d2af937-af5c-4f97-9a07-616f6903f32b.png)
 
@@ -132,8 +156,8 @@ The above screenshots are the actual workflow that [I implemented yesterday and 
 
 There are a couple of downsides of this approach:
 
-* The user signs a message, so the UI is shit as it only displays a string of text. We can improve the UI of what's displayed on the user by using [Sign Typed Data V4 spec](https://docs.metamask.io/guide/signing-data.html#sign-typed-data-v4) that corresponds to [EIP-712](https://eips.ethereum.org/EIPS/eip-712), but I know there are incompatibilities among different wallets implementations that we can't ignore. I reckon this can be a secondary task to improve UX and not necessary for right now.
-* But more importantly, we need to re-implement the whole UI to allow the user to specify particular fields like Priority, Gas Limit, Max Fee and so on that MetaMask, WalletConnect, and other wallet implementations gives us for free. **Who's going to be in charge of doing that? Would it be somebody from Sushi? There are certaint aspects we need to take into consideration.** Right now, the current implementation takes default values and doesn't allow to customize anything at all.
+* The user signs a message. We can improve the UI of what's displayed on the user by using [Sign Typed Data V4 spec](https://docs.metamask.io/guide/signing-data.html#sign-typed-data-v4) that corresponds to [EIP-712](https://eips.ethereum.org/EIPS/eip-712), but I know there are incompatibilities among different wallets implementations that we can't ignore. I reckon this can be a secondary task to improve UX and not necessary for right now.
+* But more importantly, we need to re-implement the whole UI to allow the user to specify particular fields like Priority, Gas Limit, Max Fee and so on that MetaMask, WalletConnect, and other wallet implementations gives us for free. **Who's going to be in charge of doing that? Would it be somebody from Sushi? There are certain aspects we need to take into consideration.** Right now, the current implementation takes default values and doesn't allow customizing anything at all.
 * If we use WalletConnect to sign the message, in my tests that I conducted with Trust Wallet that implements the standard, it doesn't work correctly, and it doesn't return the signed data to the front-end (more on it's associated section).
 
 ## WalletConnect
@@ -189,8 +213,8 @@ Below there's an screenshot of my debugging session of yesterday that displays t
 
 After spending some time there are two potential scenarios that I'm considering and that I need more supporting evidence:
 
-* Trust Wallet is ignoring the RPC endpoint purposedly when using `library.getSigner().sendTransaction()` and is being sent using their preconfigured Infura / Alchemy or whatever account.
-* Recently, couple of days ago, [it has been reported that `@walletconnect/ethereum-provider` library](https://github.com/WalletConnect/walletconnect-monorepo/issues/663) (the one that under the surface Sushi is using) doesn't correctly fill the information correctly for the RPC in certain circumstances.
+* Trust Wallet is ignoring the RPC endpoint purposely when using `library.getSigner().sendTransaction()` and is being sent using their preconfigured Infura / Alchemy or whatever account.
+* Recently, a couple of days ago, [it has been reported that `@walletconnect/ethereum-provider` library](https://github.com/WalletConnect/walletconnect-monorepo/issues/663) (the one that under the surface Sushi is using) doesn't correctly fill the information correctly for the RPC in certain circumstances.
 
 ### Alternative Approach: Sign the tx ourselves
 
@@ -206,7 +230,7 @@ The algorithm for custom signing the Tx that I explained for MetaMask works in t
 
 ![image](https://user-images.githubusercontent.com/82811/146025356-409e1b5e-8627-44d8-83d4-f71c04a2e989.png)
 
-Basically, we detect if the provider is MetaMask, if it is, we custom sign the whole tx:
+Basically, we detect if the provider is MetaMask, if it is, therefore we must custom sign the whole tx:
 
 ```typescript
 library
@@ -252,7 +276,7 @@ Caveats of this implementation:
 As I described, this only touches MetaMask and WalletConnect, I can't imagine if we need to support the other connectors. We can skip those for now, but even with that, we need to answer the questions I raised for the case of MetaMask and also those of WalletConnect if we are willing to support it at all.
 
 
-## Intro
+## Once more unto the breach
 
 After spending more time yesterday reading more Sushi's codebase, reading the code of WalletConnect and MetaMask, reading a couple of Github issues and conducting tests, I've solved some problems that I presented yesterday. This comment is an update of my newly acquired knowledge and the progress I have made since:
 
@@ -414,7 +438,7 @@ let txResponse: Promise<TransactionResponseLight>
 
 This leaves the algorithm like:
 
-1) If user does not have enabled OpenMEV, continue like previousy.
+1) If user does not have enabled OpenMEV, continue like previously.
 2) If it does then:
   1) Populate the transaction information by using `library.getSigner().populateTransaction()` method
   2) Convert the resulting tx from `ethersjs` to raw by using `TransactionFactory.fromTxData` helper
