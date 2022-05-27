@@ -1,16 +1,16 @@
 ---
 created: 2021-12-26T17:37:10 (UTC -08:00)
+title: Sushiswap Analysis
 tags: [analysis,sushiswap,protocol]
-source: https://chowdera.com/2021/07/20210726071642995z.html
 author: 
 ---
 
-# Analysis of sushiswap protocol - 文章整合
+# Analysis of SushiSwap Protocol
 
-> ## Excerpt
-> Protocol Brief  SushiSwap It's a bifurcation from Uniswap Decentrali
 
----
+> Protocol Brief  SushiSwap:  a bifurcation from UniswapV02
+
+
 #### **Protocol Brief**
 
 SushiSwap is a bifurcation from UniswapV2, which itself can trace back to Bancor Protocol.
@@ -229,6 +229,7 @@ Then initialize in the constructor , requirement delay The delay is between the 
 
 After that receive The function is used to accept the transfer of tokens from the external account address and contract address to the current contract address ：
 
+```solidity
     // XXX: function() external payable { }
     receive() external payable { }
 
@@ -242,9 +243,11 @@ setDelay Function to update the delay , The function requires the caller of the 
 
         emit NewDelay(delay);
     }
+```
 
 acceptAdmin Function to update admin Address , This function requires the function caller to be admin Address in queue , Then ask to update the current admin And will admin The address in was removed , After through emit Triggering event ：
 
+```solidity
     function acceptAdmin() public {
         require(msg.sender == pendingAdmin, "Timelock::acceptAdmin: Call must come from pendingAdmin.");
         admin = msg.sender;
@@ -252,9 +255,11 @@ acceptAdmin Function to update admin Address , This function requires the functi
 
         emit NewAdmin(admin);
     }
+```
 
-setPendingAdmin The function sets the in the queue admin Address , First of all, I will check admin\_initialized Is it true( In the constructor admin Address initialized , however admin\_initialized Still for false, Nothing new ), If false entering else, Then check whether the current function caller is admin Address , If so, update admin\_initialized, Set it to true, Then update pendingAdmin, When called the second time setPendingAdmin when , At this time admin\_initialized Already been true, Therefore, the caller will be required to be the current contract address , That's why SushiSwap Officially " Administrative rights have been given to time lock (timelock) contract " Why ：
+setPendingAdmin The function sets the in the queue admin Address , First of all, I will check admin\_initialized Is it true( In the constructor admin Address initialized , however admin\_initialized Still for false, Nothing new ), If false entering else, Then check whether the current function caller is admin Address , If so, update admin\_initialized, Set it to true, Then update pendingAdmin, When called the second time setPendingAdmin when , At this time admin\_initialized Already been true, Therefore, the caller will be required to be the current contract address , That's why SushiSwap Officially " Administrative rights have been given to time lock (timelock) contract "
 
+```solidity
     function setPendingAdmin(address pendingAdmin\_) public {
         // allows one time setting of admin for deployment purposes
         if (admin\_initialized) {
@@ -267,9 +272,11 @@ setPendingAdmin The function sets the in the queue admin Address , First of all,
 
         emit NewPendingAdmin(pendingAdmin);
     }
+```
 
 queueTransaction Used to add a transaction to the transaction queue , The function first retrieves whether the function caller is admin Address , Then retrieve whether the delay requirements are met , Then calculate the transaction hash, Then add the transaction to the transaction queue , And pass emit Triggering event ：
 
+```solidity
     function queueTransaction(address target, uint value, string memory signature, bytes memory data, uint eta) public returns (bytes32) {
         require(msg.sender == admin, "Timelock::queueTransaction: Call must come from admin.");
         require(eta >= getBlockTimestamp().add(delay), "Timelock::queueTransaction: Estimated execution block must satisfy delay.");
@@ -283,6 +290,7 @@ queueTransaction Used to add a transaction to the transaction queue , The functi
 
 cancelTransaction The function cancels a transaction in the transaction queue , First, it will retrieve whether the caller of the current function is a contract admin Address , Then calculate a transaction hash, Then remove the transaction from the transaction queue , After through emit Triggering event ：
 
+```solidity
     function cancelTransaction(address target, uint value, string memory signature, bytes memory data, uint eta) public {
         require(msg.sender == admin, "Timelock::cancelTransaction: Call must come from admin.");
 
@@ -291,9 +299,10 @@ cancelTransaction The function cancels a transaction in the transaction queue , 
 
         emit CancelTransaction(txHash, target, value, signature, data, eta);
     }
-
+```
 executeTransaction Function to execute a transaction , This function first retrieves whether the caller of the current function is admin Address , Then calculate a transaction hash, Then retrieve whether the delay condition is met , Then remove the transaction from the transaction queue , And then through call Call execute transaction , Finally through emit Triggering event ：
 
+```solidity
     function executeTransaction(address target, uint value, string memory signature, bytes memory data, uint eta) public payable returns (bytes memory) {
         require(msg.sender == admin, "Timelock::executeTransaction: Call must come from admin.");
 
@@ -320,18 +329,22 @@ executeTransaction Function to execute a transaction , This function first retri
 
         return returnData;
     }
+```
 
 getBlockTimestamp The function is simple , Just get the timestamp of the current block ：
 
+```solidity
     function getBlockTimestamp() internal view returns (uint) {
         // solium-disable-next-line security/no-block-members
         return block.timestamp;
     }
+```
 
 ##### **SushiToken**
 
 SushiToken It's a token contract , With voting function , The following is the official source code ：
 
+```solidity
 // SPDX-License-Identifier: MIT
 
 pragma solidity 0.6.12;
@@ -578,18 +591,24 @@ contract SushiToken is ERC20("SushiToken", "SUSHI"), Ownable {
         return chainId;
     }
 }
+```
 
 This function inherits from ERC20( This is a novel way of writing , Use it directly ERC-20 Initializes the current contract with the constructor of ) and Ownable:
 
+```solidity
 contract SushiToken is ERC20("SushiToken", "SUSHI"), Ownable {
+```
 
 After that mint The function is used to issue additional tokens , This function needs to pass two parameters ：
 
+```solidity
 -   to： Address to accept new tokens
 -   \_amount： Number of new tokens
+```
 
 The function consists of onlyOwner Modifier modification , Contract required owner call , Then call UniswapV2 Of mint Function to perform coinage operations ：
 
+```solidity
     function mint(address \_to, uint256 \_amount) public onlyOwner {
         \_mint(\_to, \_amount);
         \_moveDelegates(address(0), \_delegates\[\_to\], \_amount);
@@ -609,9 +628,11 @@ The function consists of onlyOwner Modifier modification , Contract required own
         balanceOf\[to\] = balanceOf\[to\].add(value);
         emit Transfer(address(0), to, value);
     }
+```
 
 Then call \_moveDelegates Transfer entrustment , Here, we take the parameters passed in before as an example for analysis, and go directly to the last if In the sentence , Then according to dstRep To retrieve the inspection site of the account ( A check site that marks the number of votes for a particular block ), When the number of inspection sites of the account is greater than 0, Retrieve the number of votes from the last checkpoint and assign it to srcRepOld, If there are no detection points, it is set to 0, Then use the original number of votes plus the number of assets to be transferred , As new votes ( It can also be said that additional issuance token Related to the number of votes ,1 token representative 1 ticket ), Then call \_writeCheckpoint Update check site ：
 
+```solidity
     /// @notice A checkpoint for marking number of votes from a given block
     struct Checkpoint {
         uint32 fromBlock;
@@ -642,6 +663,7 @@ Then call \_moveDelegates Transfer entrustment , Here, we take the parameters pa
             }
         }
     }
+```
 
 \_writeCheckpoint The code is as follows , The parameters here are described as follows ：
 
@@ -652,6 +674,7 @@ Then call \_moveDelegates Transfer entrustment , Here, we take the parameters pa
 
 Then get the current number of blocks , Then check whether the number of original checkpoints is greater than 0, Accept token Of the previous checkpoint corresponding to the address fromBlock Is it consistent with the current number of blocks , Update accepted if consistent token Voting of the previous checkpoint corresponding to the address , Otherwise, the update is accepted token The current check site of the address votes , At the same time, add the number of inspection sites 1, After through emit Triggering event , In general, coinage is accompanied by the recording and distribution of votes ：
 
+```solidity
     function \_writeCheckpoint(
         address delegatee,
         uint32 nCheckpoints,
@@ -675,9 +698,10 @@ Then get the current number of blocks , Then check whether the number of origina
         require(n < 2\*\*32, errorMessage);
         return uint32(n);
     }
-
+```
 Here are some global variables defined , Some of them have been introduced to ：
 
+```solidity
     /// @notice A record of votes checkpoints for each account, by index
   //  Voting checkpoint records for each account listed by index 
     mapping (address => mapping (uint32 => Checkpoint)) public checkpoints;
@@ -695,17 +719,21 @@ Here are some global variables defined , Some of them have been introduced to �
     /// @notice A record of states for signing / validating signatures
     //  Signature / Verify the status record of the signature 
     mapping (address => uint) public nonces;
+```
 
 Then there are two events ：
 
+```solidity
      /// @notice An event thats emitted when an account changes its delegate
     event DelegateChanged(address indexed delegator, address indexed fromDelegate, address indexed toDelegate);
 
     /// @notice An event thats emitted when a delegate account's vote balance changes
     event DelegateVotesChanged(address indexed delegate, uint previousBalance, uint newBalance);
+```
 
 After that delegates The function is used to vote for the function caller delegator：
 
+```solidity
     /\*\*
      \* @notice Delegate votes from \`msg.sender\` to \`delegatee\`
      \* @param delegator The address to get delegatee for
@@ -717,9 +745,11 @@ After that delegates The function is used to vote for the function caller delega
 {
         return \_delegates\[delegator\];
     }
+```
 
 delegatee The function is also used to deliver the ticket of the function caller to the specified address , Different from the above, this function calls \_moveDelegates Used to transfer delegates ：
 
+```solidity
    /\*\*
     \* @notice Delegate votes from \`msg.sender\` to \`delegatee\`
     \* @param delegatee The address to delegate votes to
@@ -738,6 +768,7 @@ delegatee The function is also used to deliver the ticket of the function caller
 
         \_moveDelegates(currentDelegate, delegatee, delegatorBalance);
     }
+```
 
 From the signatory to the authorized person's representative to vote ：
 
@@ -747,7 +778,7 @@ From the signatory to the authorized person's representative to vote ：
 -   v： Signed recovery bytes
 -   r：ECDSA Signature pair r Half
 -   s： yes ECDSA Half of the signature pair
-
+```solidity
     /\*\*
      \* @notice Delegates votes from signatory to \`delegatee\`
      \* @param delegatee The address to delegate votes to
@@ -799,9 +830,11 @@ From the signatory to the authorized person's representative to vote ：
         require(now <= expiry, "SUSHI::delegateBySig: signature expired");
         return \_delegate(signatory, delegatee);
     }
+```
 
 getCurrentVotes Used to get the current vote ：
 
+```solidity
     /\*\*
      \* @notice Gets the current votes balance for \`account\`
      \* @param account The address to get votes balance
@@ -815,9 +848,11 @@ getCurrentVotes Used to get the current vote ：
         uint32 nCheckpoints = numCheckpoints\[account\];
         return nCheckpoints > 0 ? checkpoints\[account\]\[nCheckpoints - 1\].votes : 0;
     }
+```
 
 getPriorVotes Function to determine the number of priority votes for an account starting with a block number ：
 
+```solidity
     /\*\*
      \* @notice Determine the prior number of votes for an account as of a block number
      \* @dev Block number must be a finalized block or else this function will revert to prevent misinformation.
@@ -862,14 +897,17 @@ getPriorVotes Function to determine the number of priority votes for an account 
         }
         return checkpoints\[account\]\[lower\].votes;
     }
+```
 
 getChainId The function retrieves the current getChainId：
 
+```solidity
     function getChainId() internal pure returns (uint) {
         uint256 chainId;
         assembly { chainId := chainid() }
         return chainId;
     }
+```
 
 ##### **MasterChef**
 
