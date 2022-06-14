@@ -31,48 +31,23 @@
 ></script>
 
 <!-- Simple Jekyll Search -->
-<script
-  src="https://cdnjs.cloudflare.com/ajax/libs/simple-jekyll-search/1.7.12/simple-jekyll-search.min.js"
-  integrity="sha512-APy7Ff/y4pdIHleqiTMcRZ8Wu6tjfqhJpgAcaCvTuFQPj/G+/A5u0uZi/DkfkuLQ6FeFmDJgh/zl0y3If/VUyA=="
-  crossorigin="anonymous"
-></script>
+<script src="https://unpkg.com/simple-jekyll-search@latest/dest/simple-jekyll-search.min.js"></script>
 
-<!-- MathJax https://github.com/mathjax/MathJax/issues/2220 -->
-<script>
-  MathJax = {
-    options: {
-      renderActions: {
-        /* add a new named action not to override the original 'find' action */
-        find_script_mathtex: [
-          10,
-          function (doc) {
-            for (const node of document.querySelectorAll(
-              'script[type^="math/tex"]',
-            )) {
-              const display = !!node.type.match(/; *mode=display/);
-              const math = new doc.options.MathItem(
-                node.textContent,
-                doc.inputJax[0],
-                display,
-              );
-              const text = document.createTextNode('');
-              node.parentNode.replaceChild(text, node);
-              math.start = { node: text, delim: '', n: 0 };
-              math.end = { node: text, delim: '', n: 0 };
-              doc.math.push(math);
-            }
-          },
-          '',
-        ],
-      },
-    },
-  };
+<!-- Parse the Latex divs with Katex-->
+<script type="text/javascript">
+  $("script[type='math/tex']").replaceWith(
+    function(){
+      var tex = $(this).text();
+      return katex.renderToString(tex, {displayMode: false});
+  });
+
+  $("script[type='math/tex; mode=display']").replaceWith(
+    function(){
+      var tex = $(this).text();
+      return katex.renderToString(tex.replace(/%.*/g, ''), {displayMode: true});
+  });
 </script>
-<script
-  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.0.5/es5/tex-chtml.js"
-  integrity="sha512-WIPUeuVusAT6dUtN6xKArYCBEa76ltyvaz3ltvQd+dy7ISdGJv1Y3y7eDBEF986YfNtmZGLdAaEBSgeBb+8OSg=="
-  crossorigin="anonymous"
-></script>
+
 
 <!-- Async load function -->
 <script>

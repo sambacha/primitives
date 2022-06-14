@@ -4,7 +4,7 @@ description: Engineering Blog
 header_img: /assets/img/home.jpeg
 baseurl: /primitives
 owner: manifoldfinance
-published_at: 2021
+published_at: 2022
 repository: manifoldfinance/primitives
 
 # Sidebar settings
@@ -21,12 +21,14 @@ ga_measurement_id:
 
 # Comments settings (https://utteranc.es/)
 # You must use your own repository, otherwise it won't work.
-comments_repository: manifoldfinance/comments
+#comments_repository: manifoldfinance/comments
 
 # Build settings
 paginate: 10
 timezone: UTC
+markdown: kramdown
 kramdown:
+  math_engine: mathjax
   syntax_highlighter_opts:
     block:
       line_numbers: true
