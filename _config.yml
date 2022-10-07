@@ -28,7 +28,7 @@ paginate: 10
 timezone: UTC
 markdown: kramdown
 kramdown:
-  math_engine: mathjax
+  math_engine: katex
   syntax_highlighter_opts:
     block:
       line_numbers: true
@@ -48,3 +48,4 @@ plugins:
   - jekyll-sitemap
   - jemoji
   - rouge
+  - jekyll-katex
