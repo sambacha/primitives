@@ -1,3 +1,7 @@
+public/
+dist/
+build/
+tmp/
 adminx
 # Jekyll
 _site/

@@ -1,5 +1,5 @@
 [build]
-command = "yarn run netlify-build"
+command = "bundle && bundle exec jekyll clean && bundle exec jekyll b -D --lsi --future -d _site"
 publish = "_site"
 
 [[headers]]

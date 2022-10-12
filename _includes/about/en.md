@@ -1,7 +1,7 @@
 # An Introduction to Power in the Modern State
 
 
-Power in Medieval Europe existed in a delicate balancing act between the **Crown, the Church, the Nobility, and the Merchant class. ** 
+Power in Medieval Europe existed in a delicate balancing act between the **Crown, the Church, the Nobility, and the Merchant class** .
 
 These institutions, holding power within a regime, can be accurately described as constituting the Government. A good King knew that if he wanted to retain power, he needed to ensure that he was not replaced as king, first and foremost. While the Crown itself retains power, kings can be replaced.
 
@@ -11,7 +11,7 @@ A good king must, however, also to ensure that the Crown’s power (and hence hi
 
 Controls the military and creates law. Delegates power to the Nobility for maintenance of local order.-The Church: Determines social values and act as a source of truth for the people. Exerts power by influencing social norms and expectations, setting the boundaries of acceptable thought, and condemning heretics.-The Nobility: Delegated either local fiefdoms or specific powers by the Crown to administer the law and day-to-day running of affairs. Responsible to the Crown.-The Merchants: Have power by virtue of their material wealth. Do not have direct responsibility for anything unless compelled to by the Crown.
 
-There are some assumptions made in this model, which we will address briefly. Power exists in a closed system. While the overall power of the system can rise or fall depending on regime strength, it can never leak out into another, unseen institution. So, whatever power exists in a regime can only shift between institutions. The institutions themselves, or at least their functions and loose groupings, persist and cannot be created or destroyed so long as the underlying civilisationexists.
+There are some assumptions made in this model, which we will address briefly. Power exists in a closed system. While the overall power of the system can rise or fall depending on regime strength, it can never leak out into another, unseen institution. So, whatever power exists in a regime can only shift between institutions. The institutions themselves, or at least their functions and loose groupings, persist and cannot be created or destroyed so long as the underlying civilizations exists.
 
 At this point, a skeptic may rightly ask: “But what about the people? Surely they have power?”. The answer is no. The people do not have any direct power under this model. If you disagree, I suggest you brush up on your history of peasant rebellions. The word “Jacquerie”, and the derisive, contemptuous connotation it has exist for good reasons.
 
@@ -25,7 +25,7 @@ It’s likely that you will be wondering: “if the institutions persist, where 
 
 We will break the Church’s main functions down into three tasks: creation of truth, propagation of that truth to society at large, and suppression of alternate viewpoints. Who creates truth in society? Who are our oracles? Begin with what constitutes “proof” today. Consider the knee-jerk reaction of a midwit losing an argument: “Do you have a source for that?”.
 
-	Yes, dear reader, our priests wear white lab coats and conduct elaborate rituals with petri dishes and computer modelling programs. Sometimes they even make animal sacrifices –all humanely and ethically, of course. If my experience in research holds true, most are even virgins, just like our Medieval priests.
+> Yes, dear reader, our priests wear white lab coats and conduct elaborate rituals with petri dishes and computer modelling programs. Sometimes they even make animal sacrifices –all humanely and ethically, of course. If my experience in research holds true, most are even virgins, just like our Medieval priests.
 
 If you come armed with a list of “credible sources” to support your claims, you can make anything true. If you scoff at this and counter that our priestly caste today offers a more serious and accurate description of the world than their Christian predecessors, I invite you to take a deeper look into the replication crisis. Continue to look, and you will see that the Church declares certain perspectives “true” while suppressing others in a fashion which has little to do with fact.
 
@@ -60,4 +60,3 @@ Interestingly, despite the executive’s power being as weak as it has ever been
 It is tough to say which institution out of the Church, the Nobility, and the Merchants is currently the most powerful. The three exist in a kind of anarchic triumvirate, all feeding from each other to further accelerate their dominance of the political, financial, and even social life. If this author is to wager a guess, it would be the Church which dominates; by controlling the information, the Church controls the youth. On a long enough timeline, these youth, brought up on Church orthodoxies, will staff the other arms of the Government and subvert them from within.
 
 These trends broadly represent a slow erosion of the Crown’s power, leached by representative democracy and then swallowed up by the Church and Nobility. Today’s Crown, including all legislatures and leaders, are largely powerless. They are accountable to the people, and therefore temporary according to their whims, but the Nobility, Church and Merchants are unaccountable and impossible for the people to remove. Essentially, we now perform a charade where we elect a powerless figurehead who manufactures consent for the real ruling regime.
-

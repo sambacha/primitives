@@ -1,51 +1,20 @@
 {
-  "name": "primitives-blog",
+  "name": "manifoldfinance-primitives-blog",
+  "version": "1.0.0",
   "private": true,
-  "version": "0.0.2",
-  "description": "ethereum and engineering blog",
-  "files": [
-    "*"
-  ],
-  "scripts": {
-    "compile": "bundle exec jekyll build",
-    "deploy": "npx gh-pages -d _site/",
-    "fmt": "npx prettier --config .prettierrc.json --write '**/*.md'"
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sambacha/primitives.git"
+    "url": "git+https://github.com/manifoldfinance/primitives.git"
   },
-  "author": "Sam Bacha <sambacha@gmail.com>",
+  "keywords": [],
+  "author": "SEE CONTRIBUTORS",
   "license": "SEE LICENSE IN LICENSE",
   "bugs": {
-    "url": "https://github.com/sambacha/primitives/issues"
+    "url": "https://github.com/manifoldfinance/primitives/issues"
   },
-  "homepage": "https://github.com/sambacha/primitives#readme",
+  "homepage": "https://github.com/manifoldfinance/primitives#readme",
   "devDependencies": {
-    "@babel/core": "^7.12.3",
-    "@babel/preset-env": "^7.12.1",
-    "@primer/css": "^15.2.0",
-    "autoprefixer": "^8.6.5",
-    "babel-loader": "^8.2.1",
-    "css-loader": "^5.0.1",
-    "gh-pages": "^3.2.3",
-    "lighthouse": "^6.4.1",
-    "mini-css-extract-plugin": "^1.2.1",
-    "node-sass": "^4.7.2",
-    "prettier": "^2.5.1",
-    "sass": "^1.29.0",
-    "sass-loader": "^10.0.5",
-    "webpack": "^5.6.0",
-    "webpack-cli": "^4.2.0"
-  },
-  "keywords": [
-    "ethereum",
-    "blog",
-    "roguelike",
-    "writing",
-    "eth"
-  ],
-  "dependencies": {
-    "postcss-cli": "^9.1.0"
+    "gh-pages": "^4.0.0"
   }
 }

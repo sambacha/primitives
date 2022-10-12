@@ -92,5 +92,10 @@ exclude: [
     "README.md",
     ".github/",
     "Makefile",
+    "dev-server",
+    "configure",
+    "webpack.config.js",
+    "yarn.lock",
+    "Gemfile.lock" ,
     "*.sh"
 ]
