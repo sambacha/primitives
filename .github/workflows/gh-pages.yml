@@ -1,35 +1,132 @@
-name: gh-pages
-
+name: GitHub Pages
 on:
   push:
     branches:
-      - master  # Here source code branch is `master`, it could be other branch
+      - master
 
 jobs:
-  build_and_deploy:
-    runs-on: ubuntu-latest
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-20.04
+    env:
+      DEPLOY_DIR: _site/
+      DEPLOY_BRANCH: gh-pages
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
 
-      # Use GitHub Actions' cache to cache dependencies on servers
-      - uses: actions/cache@v2
+      - name: Prepare branch
+        run: |
+          mkdir "${DEPLOY_DIR}"
+          cd "${DEPLOY_DIR}"
+          # Clone and checkout existing branch, or initialise with a new and empty branch
+          git clone --depth 5 --branch "${DEPLOY_BRANCH}" "https://github.com/${GITHUB_REPOSITORY}.git" . || git init -b "${DEPLOY_BRANCH}"
+      - uses: ruby/setup-ruby@v1
         with:
-          path: vendor/bundle
-          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-gems-
+          ruby-version: 2.7
+          bundler-cache: true
+          # If your site is in a subdirectory
+          # working-directory: ./
 
-      # Use GitHub Deploy Action to build and deploy to Github
-      - uses: jeffreytse/jekyll-deploy-action@v0.4.0
+      - name: Jekyll build
+        # If your site is in a subdirectory
+        # working-directory: ./
+        run: bundle exec jekyll build
+
+      - name: Push to branch
+        # Inspired by https://github.com/helaili/jekyll-action/blob/2.2.0/entrypoint.sh
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        run: |
+          cd "${DEPLOY_DIR}"
+          touch .nojekyll
+          git config user.name "${GITHUB_ACTOR}" && \
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com" && \
+          git add . && \
+          git commit --allow-empty -m "Build commit ${GITHUB_SHA}" && \
+          git push "https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:${DEPLOY_BRANCH}"
+  bump_version:
+    name: Bump Version
+    needs: deploy
+    runs-on: ubuntu-latest
+    outputs:
+      new_tag: ${{ steps.github_tag_action.outputs.new_tag }}
+      changelog: ${{ steps.github_tag_action.outputs.changelog }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Bump version and push tag
+        id: github_tag_action
+        uses: mathieudutour/github-tag-action@v4.5
         with:
-          provider: 'github'
-          token: ${{ secrets.GITHUB_TOKEN }} # It's your Personal Access Token(PAT)
-          repository: ''             # Default is current repository
-          branch: 'gh-pages'         # Default is gh-pages for github provider
-          jekyll_src: './'           # Default is root directory
-          jekyll_cfg: '_config.yml'  # Default is _config.yml
-          jekyll_baseurl: ''         # Default is according to _config.yml
-          bundler_ver: '>=0'         # Default is latest bundler version
-          cname: ''                  # Default is to not use a cname
-          actor: ''                  # Default is the GITHUB_ACTOR
-          pre_build_commands: ''     # Installing additional dependencies (Arch Linux)
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          release_branches: master
+
+  create_release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: ${{ needs.bump_version.outputs.new_tag != null }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Prepare branch
+        run: |
+          mkdir "${DEPLOY_DIR}"
+          cd "${DEPLOY_DIR}"
+          # Clone and checkout existing branch, or initialise with a new and empty branch
+          git clone --depth 5 --branch "${DEPLOY_BRANCH}" "https://github.com/${GITHUB_REPOSITORY}.git" . || git init -b "${DEPLOY_BRANCH}"
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.7
+          bundler-cache: true
+          # If your site is in a subdirectory
+          # working-directory: ./
+
+      - name: Jekyll build
+        # If your site is in a subdirectory
+        # working-directory: ./
+        run: bundle exec jekyll build
+
+      - name: Push to branch
+        # Inspired by https://github.com/helaili/jekyll-action/blob/2.2.0/entrypoint.sh
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        run: |
+          cd "${DEPLOY_DIR}"
+          touch .nojekyll
+          git config user.name "${GITHUB_ACTOR}" && \
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com" && \
+          git add . && \
+          git commit --allow-empty -m "Build commit ${GITHUB_SHA}" && \
+          git push "https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:${DEPLOY_BRANCH}"
+
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@4
+        with:
+          branch: gh-pages # The branch the action should deploy to.
+          folder: _site # The folder the action should deploy.
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ needs.bump_version.outputs.new_tag }}
+          release_name: Release ${{ needs.bump_version.outputs.new_tag }}
+          body: |
+            New version ${{ needs.bump_version.outputs.new_tag }}
+      - run: for f in `ls -d _site/ | xargs`; do tar -cvzf ${f%/}.tar.gz $f; done
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          prerelease: true
+          title: "Development Build"
+          files: |
+            LICENSE.txt
+            _site.tar.gz
