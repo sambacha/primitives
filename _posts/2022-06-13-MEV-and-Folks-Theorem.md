@@ -21,13 +21,12 @@ An agent is individually rational if they try to maximize its own revenue.
 Example: Construct block with max fees
 
 A miner receives a set of transactions $$xx _{1}, \ldots, tx x _{n}$$ with gas
-price $$b_{1}, \ldots, b_{n}$ and $g_{1}, \ldots, g_{n}$$ units of gas. The miner
-can choose any subset of transactions $T X$ such that
+price $$b_{1}, \ldots, b_{n}$ and $g_{1}, \ldots, g_{n}$$ units of gas. The
+miner can choose any subset of transactions $T X$ such that
 $$\sum_{t x \in T X } g_{ tx } \leq \max$$ Gas.
 
-script[type='math/tex'; mode=display]
-\begin{equation*} T X \text { such that } \sum*{ tx \in T X } g*{ tx } \leq \max
-\text { Gas. } \end{equation*}
+script[type='math/tex'; mode=display] \begin{equation*} T X \text { such that }
+\sum*{ tx \in T X } g*{ tx } \leq \max \text { Gas. } \end{equation*}
 
 ### Example: Transaction inclusion
 
@@ -66,9 +65,8 @@ probability to each pure strategy.
 A mixed strategy $s=\left(s_{1}, \ldots, s_{n}\right)$ is a Nash equilibrium if
 for every player $$i$$, and any strategy $$\tilde{s}_{i}$$, we have that
 
-script[type='math/tex'; mode=display]
-\begin{equation*} u*{i}\left(s*{i}, s*{-i}\right) \geq u*{i}\left(\tilde{s}*{i},
-s*{-i}\right) \end{equation*}
+script[type='math/tex'; mode=display] \begin{equation*} u*{i}\left(s*{i},
+s*{-i}\right) \geq u*{i}\left(\tilde{s}*{i}, s*{-i}\right) \end{equation*}
 
 ### Theorem
 
@@ -99,10 +97,10 @@ Problems and difficulties to cooperate
 ##### Non-Myopic
 
 Players are non-myopic if they are concerned for presents and future payoffs.
-Given an infinite sequence of payoffs $$r_{0}, r_{1}, r_{2}, \ldots$$ for a player
-$i$ and a discount factor $$\delta$$ with $$0 \leq \delta<1, i^{\prime}$$ s future
-discounted reward is \begin{equation*} \sum*{i=0}^{\infty} \delta^{i} r*{i}
-\end{equation*} Intuition on discount factor:
+Given an infinite sequence of payoffs $$r_{0}, r_{1}, r_{2}, \ldots$$ for a
+player $i$ and a discount factor $$\delta$$ with $$0 \leq \delta<1, i^{\prime}$$
+s future discounted reward is \begin{equation*} \sum*{i=0}^{\infty} \delta^{i}
+r*{i} \end{equation*} Intuition on discount factor:
 
 - The agent values about near term profits than future profits.
 - The discount factor models the players' patience.

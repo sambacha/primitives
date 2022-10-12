@@ -5,13 +5,7 @@ source: https://chowdera.com/2021/07/20210726071642995z.html
 author:
 ---
 
-# Analysis of sushiswap protocol - 文章整合
-
-> ## Excerpt
->
-> Protocol Brief SushiSwap It's a bifurcation from Uniswap Decentrali
-
----
+# Analysis of sushiswap protocol
 
 #### **Protocol Brief**
 

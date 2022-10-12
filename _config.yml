@@ -1,5 +1,7 @@
 # Site settings
 title: Primitives
+lang: en-US
+
 description: Engineering Blog
 header_img: /assets/img/home.jpeg
 baseurl: /primitives
@@ -10,7 +12,8 @@ repository: manifoldfinance/primitives
 # Sidebar settings
 sidebar: true
 sidebar_avatar: /assets/img/avatar.jpeg
-sidebar_about_description: 0xJanitor
+sidebar_about_description:
+  Engineering blog for Ethereum, Systems and Mechanism design and architecture
 
 RSS: true
 email: sam@manifoldfinance.com
@@ -23,15 +26,20 @@ ga_measurement_id:
 # You must use your own repository, otherwise it won't work.
 #comments_repository: manifoldfinance/comments
 
+
 # Build settings
 paginate: 10
-timezone: UTC
+timezone: US/Pacific
+highlighter: rouge
 markdown: kramdown
 kramdown:
+  input: GFM
+  toc_levels: '1,2,3,4'
   math_engine: katex
   syntax_highlighter_opts:
     block:
       line_numbers: true
+
 collections:
   pages:
     output: true
@@ -49,3 +57,14 @@ plugins:
   - jemoji
   - rouge
   - jekyll-katex
+
+
+# Blog archives
+#
+# Docs: https://github.com/jekyll/jekyll-archives/
+jekyll-archives:
+  enabled:
+    - year
+  layout: posts-year
+  permalinks:
+    year: '/:year/'
