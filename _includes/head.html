@@ -6,8 +6,40 @@
     content="width=device-width, initial-scale=1, viewport-fit=cover"
   />
 
-  {%- seo -%} {%- feed_meta -%} {%- if site.ga_measurement_id -%} {%- include
-  google-analytics.html -%} {%- endif -%}
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="{{ site.description }}">
+  <meta name="keywords" content="{{ site.keyword }}">
+  <meta name="theme-color" content="{{ site.chrome-tab-theme-color }}">
+
+  <!-- Open Graph -->
+  <meta property="og:title"
+      content="{% if page.title %}{{ page.title }} - {{ site.SEOTitle }}{% else %}{{ site.SEOTitle }}{% endif %}">
+  {% case page.layout %}
+  {% when 'post' %}
+  <meta property="og:type" content="article">
+  <meta property="og:description" content="{{ page.excerpt | strip_html | truncate:200 }}">
+  {% if page.date %}
+  <meta property="article:published_time" content="{{ page.date | date: " %Y-%m-%dT%H:%M:%SZ" }}">
+  {% endif %}
+  {% if page.author %}
+  <meta property="article:author" content="{{ page.author }}">
+  {% endif %}
+  {% for tag in page.tags %}
+  <meta property="article:tag" content="{{ tag }}">
+  {% endfor %}
+  {% else %}
+  <meta property="og:type" content="website">
+  <meta property="og:description"
+      content="{% if page.description %}{{ page.description }}{% else %}{{ site.description }}{% endif %}">
+  {% endcase %}
+  <meta property="og:image" content="{{ site.url }}{{ site.sidebar-avatar }}">
+  <meta property="og:url" content="{{ site.url }}{{ page.url }}">
+  <meta property="og:site_name" content="{{ site.SEOTitle }}">
+
+  <title>{% if page.title %}{{ page.title }} - {{ site.SEOTitle }}{% else %}{{ site.SEOTitle }}{% endif %}</title>
+
+  <!-- Web App Manifest -->
+  <link rel="manifest" href="{{ site.baseurl }}/manifest.json">
 
   <!-- Emoji Favicon  -->
   <!-- Favicon -->
@@ -34,17 +66,13 @@
   />
 
   <!-- Custom CSS -->
-  <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/main.min.css" />
-<script>
-  window.WebFontConfig = {
-    custom: {
-      families: ['KaTeX_AMS', 'KaTeX_Caligraphic:n4,n7', 'KaTeX_Fraktur:n4,n7',
-        'KaTeX_Main:n4,n7,i4,i7', 'KaTeX_Math:i4,i7', 'KaTeX_Script',
-        'KaTeX_SansSerif:n4,n7,i4', 'KaTeX_Size1', 'KaTeX_Size2', 'KaTeX_Size3',
-        'KaTeX_Size4', 'KaTeX_Typewriter'],
-    },
-  };
-</script>
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/main.min.css" | prepend: site.baseurl }}">
+
+
+      <!-- Custom CSS
+      <link rel="stylesheet" href="{{ " /assets/css/main.min.css" | prepend: site.baseurl }}">
+-->
+
 <script defer src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.2/dist/katex.min.css" integrity="sha384-bYdxxUwYipFNohQlHt0bjN/LCpueqWz13HufFEV1SUatKs1cm4L6fFgCi1jT643X" crossorigin="anonymous">
 

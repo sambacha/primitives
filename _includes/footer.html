@@ -22,6 +22,10 @@
   crossorigin="anonymous"
 ></script>
 
+<!-- Custom Theme JavaScript -->
+<script src="{{ "/js/primitives-blog.min.js " | prepend: site.baseurl }}"></script>
+
+
 <!-- Bootstrap JavaScript-->
 <!-- Currently, only navbar scroll-down effect at desktop still depends on this -->
 <script
@@ -70,6 +74,30 @@
   }
 </script>
 
+
+
+
+{% if page.plchart %}
+<!-- jquery.tagcloud.js -->
+<script>
+    // https://stackoverflow.com/questions/9975810/make-iframe-automatically-adjust-height-according-to-the-contents-without-using
+    function resizeIframe(obj) {
+        obj.style.height = obj.contentWindow.document.body.scrollHeight + 'px';
+    }
+
+    $(document).ready(function () {
+        var $chart = document.querySelector("#chart");
+        $chart.onload = function () {
+            resizeIframe($chart)
+        }
+        window.addEventListener("resize", () => {
+            resizeIframe($chart)
+        });
+    })
+</script>
+{% endif %}
+
+
 {%- if page.layout == 'post' -%}
 <!-- AnchorJS -->
 <script>
@@ -87,6 +115,9 @@
     },
   );
 </script>
+
+
+
 {%- endif -%} {%- if page.title == 'Archive' -%}
 <!-- Tag Cloud -->
 <script src="{{ site.baseurl }}/assets/js/archive.js"></script>
@@ -110,3 +141,11 @@
 <!-- Side Catalog -->
 <script src="{{ site.baseurl }}/assets/js/catalog.js"></script>
 {%- endif -%}
+
+<!--fastClick.js -->
+<script>
+  async("//cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.min.js", function () {
+      var $nav = document.querySelector("nav");
+      if ($nav) FastClick.attach($nav);
+  })
+</script>

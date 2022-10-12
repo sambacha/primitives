@@ -4,7 +4,9 @@ lang: en-US
 
 description: Engineering Blog
 header_img: /assets/img/home.jpeg
-baseurl: /primitives
+
+baseurl: "" # for example, '/blog' if your blog hosted on 'host/blog'
+
 owner: manifoldfinance
 published_at: 2022
 repository: manifoldfinance/primitives
@@ -18,6 +20,9 @@ sidebar_about_description:
 RSS: true
 email: sam@manifoldfinance.com
 github_username: manifoldfinance
+# Publish posts or collection documents with a future date.
+future: true
+twitter_username: foldfinance
 
 # Google Analytics settings (https://analytics.google.com/)
 ga_measurement_id:
@@ -31,24 +36,38 @@ ga_measurement_id:
 paginate: 10
 timezone: US/Pacific
 highlighter: rouge
+permalink: pretty
+
+
+anchorjs: true # if you want to customize anchor. check out line:181 of `post.html`
+
+
+# Markdown settings
+# replace redcarpet to kramdown,
+# although redcarpet can auto highlight code, the lack of header-id make the catalog impossible, so I switch to kramdown
+# document: http://jekyllrb.com/docs/configuration/#kramdown
 markdown: kramdown
 kramdown:
-  input: GFM
-  toc_levels: '1,2,3,4'
-  math_engine: katex
+  input: GFM # use Github Flavored Markdown !important
   syntax_highlighter_opts:
+    span:
+      line_numbers: false
     block:
       line_numbers: true
+      start_line: 1
+
+
 
 collections:
   pages:
     output: true
-    permalink: /:path/
+    permalink: /:path
 defaults:
   - scope:
       path: _posts
     values:
       layout: post
+
 plugins:
   - jekyll-feed
   - jekyll-paginate
@@ -68,3 +87,23 @@ jekyll-archives:
   layout: posts-year
   permalinks:
     year: '/:year/'
+
+
+# Featured Tags
+featured-tags: true # whether or not using Feature-Tags
+featured-condition-size: 1 # A tag will be featured if the size of it is more than this condition value
+
+# Progressive Web Apps
+chrome-tab-theme-color: "#000000"
+service-worker: true
+
+# MathJax rendering for layout:page (e.g. post preview)
+page-mathjax: false
+
+# Friends
+friends:
+[
+  { title: "BLOG_1", href: "#" },
+  { title: "NEWSLETTER_1", href: "#" },
+  { title: "BLO_2", href: "http://manifoldfinance.com" },
+]

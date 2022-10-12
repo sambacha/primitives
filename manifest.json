@@ -1,0 +1,21 @@
+{
+  "background_color": "#ffffff",
+  "description": "Engineering Blog for Ethereum, Systems and Mechanism Theory",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "Primitives Engineering Blog",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "short_name": "Primitives Blog",
+  "start_url": "/",
+  "theme_color": "#ffffff",
+  "categories": [],
+  "screenshots": [],
+  "icons": [
+    {
+      "src": "data:image/svg+xml,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22&gt;&lt;text y=%22.9em%22 font-size=%2290%22&gt;🎄&lt;/text&gt;&lt;/svg&gt;"
+    }
+  ],
+  "shortcuts": [],
+  "lang": "en"
+}
