@@ -1,11 +1,10 @@
 ---
-created: 2022-09-29T12:45:43 (UTC -07:00)
-tags: []
+created: 2022-11-21T12:45:43 (UTC -07:00)
 source: https://bford.info/2019/09/23/rational/
 author: Bryan Ford
 ---
 
-# Rationality is Self-Defeating in Permissionless Systems – Bryan Ford's Home Page
+# Rationality is Self-Defeating in Permissionless Systems
 
 > ## Excerpt
 >
@@ -15,11 +14,6 @@ author: Bryan Ford
 > blockchain and cryptocurrency fans also like open, permissionless systems like
 > Bitcoin and Ethereum, which anyone can join and participate in using weak
 > identities such as anonymous cryptography key pairs.
-
----
-
-## _September 23, 2019_
-
 > _by [Bryan Ford](https://bford.info/) and
 > [Rainer Böhme](https://informationsecurity.uibk.ac.at/people/rainer-boehme/) —
 > [PDF preprint](https://arxiv.org/pdf/1910.08820.pdf) version available_
