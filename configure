@@ -5,31 +5,33 @@ me=$(basename "$0")
 
 help_message="\
 Usage: $me [<options>] <command> [<command-options>]
-Run commands related to the slate process.
+Run commands related to the site generation workflow
+
 Commands:
-  serve                   Run the middleman server process, useful for
-                          development.
+  serve                   Run the server process.
   build                   Run the build process.
   deploy                  Will build and deploy files to branch. Use
                           --no-build to only deploy.
 Global Options:
   -h, --help              Show this help information.
   -v, --verbose           Increase verbosity. Useful for debugging.
+
 Deploy options:
   -e, --allow-empty       Allow deployment of an empty directory.
-  -m, --message MESSAGE   Specify the message used when committing on the
-                          deploy branch.
-  -n, --no-hash           Don't append the source commit's hash to the deploy
-                          commit's message.
+  -m, --message MESSAGE   Specify the message used when committing on the deploy branch.
+  -n, --no-hash           Don't append the source commit's hash to the deploy commit's message.
   --no-build              Do not build the source files.
 "
 
 bundle exec jekyll serve
-run_serve() {
+
+run_serve() 
+{
   exec bundle exec jekyll serve
 }
 
-run_build() {
+run_build() 
+{
   exec bundle exec jekyll clean && bundle exec jekyll build
 }
 
@@ -70,7 +72,7 @@ parse_args() {
       fi
       command=$1
       shift
-    elif [ -z $1 ]; then
+    elif [ -z "$1" ]; then
       break
     fi
   done
@@ -98,7 +100,8 @@ parse_args() {
   append_hash=${GIT_DEPLOY_APPEND_HASH:-true}
 }
 
-main() {
+main() 
+{
   enable_expanded_output
 
   if ! git diff --exit-code --quiet --cached; then
@@ -106,8 +109,8 @@ main() {
     return 1
   fi
 
-  commit_title=`git log -n 1 --format="%s" HEAD`
-  commit_hash=` git log -n 1 --format="%H" HEAD`
+  commit_title=$(git log -n 1 --format="%s" HEAD)
+  commit_hash=$( git log -n 1 --format="%H" HEAD)
 
   #default commit message uses last title if a custom one is not supplied
   if [[ -z $commit_message ]]; then
@@ -115,11 +118,11 @@ main() {
   fi
 
   #append hash to commit message unless no hash flag was found
-  if [ $append_hash = true ]; then
+  if [ "$append_hash" = true ]; then
     commit_message="$commit_message"$'\n\n'"generated from commit $commit_hash"
   fi
 
-  previous_branch=`git rev-parse --abbrev-ref HEAD`
+  previous_branch=$(git rev-parse --abbrev-ref HEAD)
 
   if [ ! -d "$deploy_directory" ]; then
     echo "Deploy directory '$deploy_directory' does not exist. Aborting." >&2
@@ -127,7 +130,7 @@ main() {
   fi
 
   # must use short form of flag in ls for compatibility with macOS and BSD
-  if [[ -z `ls -A "$deploy_directory" 2> /dev/null` && -z $allow_empty ]]; then
+  if [[ -z $(ls -A "$deploy_directory" 2> /dev/null) && -z $allow_empty ]]; then
     echo "Deploy directory '$deploy_directory' is empty. Aborting. If you're sure you want to deploy an empty tree, use the --allow-empty / -e flag." >&2
     return 1
   fi
@@ -149,13 +152,15 @@ main() {
   restore_head
 }
 
-initial_deploy() {
+initial_deploy() 
+{
   git --work-tree "$deploy_directory" checkout --orphan $deploy_branch
   git --work-tree "$deploy_directory" add --all
   commit+push
 }
 
-incremental_deploy() {
+incremental_deploy() 
+{
   #make deploy_branch the current branch
   git symbolic-ref HEAD refs/heads/$deploy_branch
   #put the previously committed contents of deploy_branch into the index
@@ -169,13 +174,14 @@ incremental_deploy() {
     0) echo No changes to files in $deploy_directory. Skipping commit.;;
     1) commit+push;;
     *)
-      echo git diff exited with code $diff. Aborting. Staying on branch $deploy_branch so you can debug. To switch back to main, use: git symbolic-ref HEAD refs/heads/main && git reset --mixed >&2
-      return $diff
+      echo git diff exited with code "$diff". Aborting. Staying on branch $deploy_branch so you can debug. To switch back to main, use: git symbolic-ref HEAD refs/heads/main && git reset --mixed >&2
+      return "$diff"
       ;;
   esac
 }
 
-commit+push() {
+commit+push() 
+{
   set_user_id
   git --work-tree "$deploy_directory" commit -m "$commit_message"
 
@@ -187,45 +193,51 @@ commit+push() {
 
 #echo expanded commands as they are executed (for debugging)
 enable_expanded_output() {
-  if [ $verbose ]; then
+  if [ "$verbose" ]; then
     set -o xtrace
     set +o verbose
   fi
 }
 
-#this is used to avoid outputting the repo URL, which may contain a secret token
-disable_expanded_output() {
-  if [ $verbose ]; then
+# [NOTE]. this is used to avoid outputting the repo URL, which may contain a secret token
+
+disable_expanded_output() 
+{
+  if [ "$verbose" ]; then
     set +o xtrace
     set -o verbose
   fi
 }
 
-set_user_id() {
-  if [[ -z `git config user.name` ]]; then
+set_user_id() 
+{
+  if [[ -z $(git config user.name) ]]; then
     git config user.name "$default_username"
   fi
-  if [[ -z `git config user.email` ]]; then
+  if [[ -z $(git config user.email) ]]; then
     git config user.email "$default_email"
   fi
 }
 
-restore_head() {
+restore_head() 
+{
   if [[ $previous_branch = "HEAD" ]]; then
     #we weren't on any branch before, so just set HEAD back to the commit it was on
-    git update-ref --no-deref HEAD $commit_hash $deploy_branch
+    git update-ref --no-deref HEAD "$commit_hash" $deploy_branch
   else
-    git symbolic-ref HEAD refs/heads/$previous_branch
+    git symbolic-ref HEAD refs/heads/"$previous_branch"
   fi
 
   git reset --mixed
 }
 
-filter() {
+filter() 
+{
   sed -e "s|$repo|\$repo|g"
 }
 
-sanitize() {
+sanitize() 
+{
   "$@" 2> >(filter 1>&2) | filter
 }
 
